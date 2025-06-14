@@ -94,12 +94,6 @@ namespace CaseMaroon.Units
 
 
         }
-
-        public void OnMouseEnter()
-        {
-            Debug.Log("Mouse Enter");
-        }
-
         public void EnableOutline()
         {
             UIOutline.enabled = true;
@@ -132,10 +126,11 @@ namespace CaseMaroon.Units
 
             u2Info.localPosition = offset;
         }
-
         public void OnPointerExit(PointerEventData eventData)
         {
             Destroy(remove);
         }
+
+
     }
 }

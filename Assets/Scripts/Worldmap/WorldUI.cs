@@ -1,10 +1,12 @@
-﻿using CaseMaroon.Units;
+﻿using Assets.Scripts.Worldmap.Miscellaneous;
+using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace CaseMaroon.WorldMapUI
@@ -17,65 +19,101 @@ namespace CaseMaroon.WorldMapUI
 
         public UnitUIHandler unitHandler;
 
-        private Vector2 dragOrigin;
-        /// <summary>
-        /// The maximum distance the mouse can be dragged before it is considered a drag event.
-        /// </summary>
-        /// 
         [SerializeField]
         private float maxDragDistance = 5f;
-        private float DraggedDistance { get; set; }
 
-        public bool MouseDragged
+        private Vector2 dragOrigin;
+        private float draggedDistance;
+        private bool isDragging = false;
+
+        public bool MouseDragged => draggedDistance > maxDragDistance;
+
+        public bool IsMouseOverUI()
         {
-            get
+            if (EventSystem.current == null)
+                return false;
+
+            var pointerData = new PointerEventData(EventSystem.current)
             {
-                return DraggedDistance > maxDragDistance;
-            }
-        }
-        private void OnMouseDown()
-        {
-            if (Input.GetMouseButtonUp(1))
+                position = Mouse.current.position.ReadValue()
+            };
+
+            var raycastResults = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+            foreach (var result in raycastResults)
             {
-                Debug.Log("Right Click");
+                GameObject hit = result.gameObject;
+
+                // 1. Option A: Ignore specific layers
+                if (hit.layer != LayerMask.NameToLayer("UI"))
+                {
+                    continue;
+                }
+
+                return true;
             }
 
-            Debug.Log("Mouse Down");
-            dragOrigin = Mouse.current.position.ReadValue();
+            return false;
         }
-        private void OnMouseDrag()
+
+        private void CheckMouse()
         {
-            // a time delay could also be used to prevent the drag event from being triggered too early
-            DraggedDistance = Vector2.Distance(dragOrigin, Mouse.current.position.ReadValue());
-        }
-        private void OnMouseUp()
-        {
-            if(!MouseDragged)
+            if(GlobalData.IsMouseOverScreenUI)
             {
-                Vector2Int gridPos = worldMap.GetGridPosition(dragOrigin);
-                OnGridPositionSelected(gridPos);
+                return;
             }
 
-            ResetDrag();
-        }
+            Vector2 mousePos = Mouse.current.position.ReadValue();
 
-        private void CheckRightMouse()
-        {
+            // LEFT MOUSE HANDLING
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                dragOrigin = mousePos;
+                isDragging = true;
+
+                Debug.Log("Mouse Down (Left)");
+            }
+
+            if (isDragging && Mouse.current.leftButton.isPressed)
+            {
+                draggedDistance = Vector2.Distance(dragOrigin, mousePos);
+            }
+
+            if (isDragging && Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                if (!MouseDragged)
+                {
+                    Vector2Int gridPos = worldMap.GetGridPosition(dragOrigin);
+                    OnGridPositionSelected(gridPos);
+                }
+
+                ResetDrag();
+            }
+
+            // RIGHT MOUSE HANDLING
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                // Convert mouse screen position to world position
-                Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+                Debug.Log("Right Click");
 
-                Vector2Int gridPos = worldMap.GetGridPosition(mouseScreenPos);
-
+                Vector2Int gridPos = worldMap.GetGridPosition(mousePos);
                 worldMap.HightlightPos(gridPos);
+                unitHandler.RemoveUnit(gridPos);
             }
         }
+
         private void ResetDrag()
         {
+            draggedDistance = 0f;
+            isDragging = false;
             dragOrigin = Vector2.left;
-            DraggedDistance = 0;
         }
+
+        //private void ResetDrag()
+        //{
+        //    dragOrigin = Vector2.left;
+        //    DraggedDistance = 0;
+        //}
 
         public Worldmap worldMap;
         public UnitCreator unitCreator;
@@ -83,15 +121,14 @@ namespace CaseMaroon.WorldMapUI
 
         public UIManager uiManager;
 
-
         public Canvas UnitCanvas;
 
         private PolygonCollider2D gridCollider;
-
         public GameObject AllUnitsParent;
 
         public event UnitSelected UnitSelected;
         public event GridPositionSelected GridPositionSelected;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -108,15 +145,14 @@ namespace CaseMaroon.WorldMapUI
 
             worldMap.OnWorldGenerated += WorldMap_OnWorldGenerated;
         }
-
         private void WorldMap_OnWorldGenerated(Worldmap map)
         {
-            if(gridCollider == null)
-            {
-                gridCollider = this.AddComponent<PolygonCollider2D>();
-            }
+            //if(gridCollider == null)
+            //{
+            //    gridCollider = this.AddComponent<PolygonCollider2D>();
+            //}
 
-            gridCollider.points = worldMap.polygonCollider.points;
+            //gridCollider.points = worldMap.polygonCollider.points;
         }
 
         private void Start()
@@ -128,7 +164,7 @@ namespace CaseMaroon.WorldMapUI
 
         private void Update()
         {
-            CheckRightMouse();
+            CheckMouse();
         }
         
         private void ValidateUnitParentObj()
@@ -250,6 +286,7 @@ namespace CaseMaroon.WorldMapUI
                 worldMap.ClearHighlightLayer();
             }
         }
+
 
 
         public void GetMoveablePositions(UnitInfoUI_1 unit, out List<Vector2Int> moveablePositions)

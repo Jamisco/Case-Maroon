@@ -47,6 +47,31 @@ namespace CaseMaroon.WorldMapUI
             unitUI.gridPosition = gridPos;
         }
 
+        public void RemoveUnit(UnitInfoUI_1 unitInfo)
+        {
+            Vector2Int gridPos = unitInfo.gridPosition;
+            RemoveUnitFromList(gridPos, unitInfo);
+            Object.Destroy(unitInfo.gameObject);
+            StackUnits(gridPos);
+        }
+
+        public void RemoveUnit(Vector2Int gridPos)
+        {
+            GetUnit(gridPos, out List<UnitInfoUI_1> units);
+
+            if (units == null || units.Count == 0)
+            {
+                return;
+            }
+
+            UnitInfoUI_1 unitInfo = units.Last();
+
+            RemoveUnitFromList(gridPos, unitInfo);
+            Object.Destroy(unitInfo.gameObject);
+            StackUnits(gridPos);
+        }
+
+
         public void MoveToPosition(UnitInfoUI_1 unitInfo, Vector2Int newPos)
         {
             Vector3 worldPos = grid.GridToWorldPostion(unitInfo.gridPosition);
