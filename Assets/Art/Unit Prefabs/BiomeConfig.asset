@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad5fb95c4b56f2547acc3b6450d349a7, type: 3}
+  m_Name: BiomeConfig
+  m_EditorClassIdentifier: 
+  biomeProp:
+    LandMaterial: {fileID: -876546973899608171, guid: 23a261f2764edea4a86079bbaaffdea0, type: 3}
+    SnowMaterial: {fileID: -876546973899608171, guid: 619d07894eb70a7498957a1aac36ab2d, type: 3}
+    LavaMaterial: {fileID: -876546973899608171, guid: 0d37aaecccc9961429849739ec2a886e, type: 3}
+    WaterMaterial: {fileID: -876546973899608171, guid: 1c2e4e193573c50478d06f887b0f6978, type: 3}
+    HighlightMaterial: {fileID: 2100000, guid: 423a8dab2b16b0540afc71926094b4a7, type: 2}
+    highlightColor: {r: 1, g: 1, b: 1, a: 0.25490198}
+    waterThreshold: 0.2
+    snowThreshhold: 0.2
+    roundingFactor: 30
+  biomeRules:
+  - biomeType: 0
+    tempRange: {x: 0, y: 0.33}
+    rainRange: {x: 0, y: 0.33}
+    movementCost:
+      InfantryCost: 25
+      TrackedCost: 35
+  - biomeType: 1
+    tempRange: {x: 0, y: 0.33}
+    rainRange: {x: 0.33, y: 0.66}
+    movementCost:
+      InfantryCost: 30
+      TrackedCost: 45
+  - biomeType: 2
+    tempRange: {x: 0, y: 0.33}
+    rainRange: {x: 0.66, y: 1}
+    movementCost:
+      InfantryCost: 35
+      TrackedCost: 50
+  - biomeType: 6
+    tempRange: {x: 0.33, y: 0.66}
+    rainRange: {x: 0, y: 0.33}
+    movementCost:
+      InfantryCost: 30
+      TrackedCost: 45
+  - biomeType: 3
+    tempRange: {x: 0.33, y: 0.66}
+    rainRange: {x: 0.33, y: 0.66}
+    movementCost:
+      InfantryCost: 10
+      TrackedCost: 10
+  - biomeType: 4
+    tempRange: {x: 0.33, y: 0.66}
+    rainRange: {x: 0.66, y: 1}
+    movementCost:
+      InfantryCost: 25
+      TrackedCost: 35
+  - biomeType: 7
+    tempRange: {x: 0.66, y: 1}
+    rainRange: {x: 0, y: 0.33}
+    movementCost:
+      InfantryCost: 15
+      TrackedCost: 20
+  - biomeType: 5
+    tempRange: {x: 0.66, y: 1}
+    rainRange: {x: 0.33, y: 0.66}
+    movementCost:
+      InfantryCost: 50
+      TrackedCost: -1
+  - biomeType: 8
+    tempRange: {x: 0.66, y: 1}
+    rainRange: {x: 0.66, y: 1}
+    movementCost:
+      InfantryCost: 55
+      TrackedCost: -1
+  - biomeType: 9
+    tempRange: {x: 0, y: 1}
+    rainRange: {x: 0, y: 1}
+    movementCost:
+      InfantryCost: -1
+      TrackedCost: -1
