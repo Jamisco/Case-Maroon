@@ -1,4 +1,5 @@
 ﻿using CaseMaroon.WorldMap;
+using CaseMaroon.WorldMapUI;
 using GridMapMaker;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static Assets.Scripts.Worldmap.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.WorldMap
 {
@@ -15,22 +18,22 @@ namespace CaseMaroon.WorldMap
 
         public HexShape shape;
         public Material material;
-        private Mesh OverlayMesh;
 
         [Range(0.01f, 1f)]
         public float outlineScale = 0.1f;
         public Vector2 HexScale = Vector2.one;
 
-        public Sprite cirlceSprite;
-        private Mesh circleMesh;
-        private Mesh OverlayCircleMesh;
         [Range(.01f, 2f)]
         public float radiusScale = 0.1f;
+        public Sprite cirlceSprite;
 
+        private Mesh OverlayMesh;
+        private Mesh circleMesh;
+        private Mesh OverlayCircleMesh;
 
-        private bool OverlayIsDirty = true;
+        private bool OverlayIsDirty { get; set; } =  true;
 
-        public List<Vector2Int> MovementPositions = new List<Vector2Int>();
+        public List<Vector2Int> MovementPositions { get; set; } = new List<Vector2Int>();
         public struct OverlayData
         {
             public Vector2 localPosition;
@@ -55,6 +58,7 @@ namespace CaseMaroon.WorldMap
             ValidateCircleMesh();
         }
 
+
         private void ValidateCircleMesh()
         {
             if (cirlceSprite == null)
@@ -72,7 +76,6 @@ namespace CaseMaroon.WorldMap
 
             circleMesh.colors = Enumerable.Repeat(Color.white, cirlceSprite.vertices.Length).ToArray();
         }
-
         private void Update()
         {
             if (OverlayIsDirty)
@@ -99,8 +102,8 @@ namespace CaseMaroon.WorldMap
                                   material,
                                   gameObject.layer);
             }
-        }
 
+        }
         public void AddOverlay(Vector2Int overlay, OverlayData data)
         {
             if (overlayHexes.ContainsKey(overlay))
@@ -156,7 +159,6 @@ namespace CaseMaroon.WorldMap
 
             OverlayMesh.CombineMeshes(combine, true, true);
         }
-
         private void CreateCircleMesh()
         {
             if (MovementPositions.Count == 0)
@@ -182,12 +184,10 @@ namespace CaseMaroon.WorldMap
         }
 
         public bool ShowMesh = false;
-
         private void OnValidate()
         {
             ShowMeshes();
         }
-
         private void ShowMeshes()
         {
             if (ShowMesh)
@@ -238,7 +238,6 @@ namespace CaseMaroon.WorldMap
 
             }
         }
-
         private void RemoveMeshRenderers()
         {
             // put this on a timed delay
@@ -256,5 +255,6 @@ namespace CaseMaroon.WorldMap
                 DestroyImmediate(meshRenderer);
             }
         }
+
     }
 }

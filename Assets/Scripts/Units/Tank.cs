@@ -10,11 +10,20 @@ namespace CaseMaroon.Units
 {
     public class Tank : UnitData
     {
-        public Tank(Sprite image)
+        //public Tank(Sprite image)
+        //{
+        //    Tank def = DefaultUnitData.DefaultTank;
+        //    CopyFields(def);
+        //    Image = image;
+        //}
+
+        public static Tank CreateDefaultUnit(Sprite image)
         {
-            Tank def = DefaultUnitData.DefaultTank;
-            CopyFields(def);
-            Image = image;
+            Tank inf = DefaultUnitData.DefaultTank;
+
+            inf.Image = image;
+
+            return inf;
         }
     }
 }

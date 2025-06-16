@@ -8,16 +8,35 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using static Assets.Scripts.Worldmap.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.WorldMapUI
 {
     public delegate void UnitSelected(UnitInfoUI_1 unit);
     public delegate void GridPositionSelected(Vector2Int gridPos);
+    public delegate void InputStateChanged(InputState newState, BuildingType buildType);
+    public delegate void BuildingPlaced(Vector2Int gridPos);
+    public enum InputState
+    {
+        None,
+        PlacingBuilding,
+        SelectingUnit,
+        MovingUnit,
+        CreatingUnit
+    }
     public class WorldUI : MonoBehaviour
     {
         public static WorldUI Instance { get; private set; }
 
         public UnitUIHandler unitHandler;
+        private InputState worldInputState;
+
+        public InputStateChanged OnInputStateChanged;
+
+        public InputState WorldInputState
+        {
+            get => worldInputState;
+        }
 
         [SerializeField]
         private float maxDragDistance = 5f;
@@ -27,35 +46,6 @@ namespace CaseMaroon.WorldMapUI
         private bool isDragging = false;
 
         public bool MouseDragged => draggedDistance > maxDragDistance;
-
-        public bool IsMouseOverUI()
-        {
-            if (EventSystem.current == null)
-                return false;
-
-            var pointerData = new PointerEventData(EventSystem.current)
-            {
-                position = Mouse.current.position.ReadValue()
-            };
-
-            var raycastResults = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointerData, raycastResults);
-
-            foreach (var result in raycastResults)
-            {
-                GameObject hit = result.gameObject;
-
-                // 1. Option A: Ignore specific layers
-                if (hit.layer != LayerMask.NameToLayer("UI"))
-                {
-                    continue;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
 
         private void CheckMouse()
         {
@@ -71,8 +61,6 @@ namespace CaseMaroon.WorldMapUI
             {
                 dragOrigin = mousePos;
                 isDragging = true;
-
-                Debug.Log("Mouse Down (Left)");
             }
 
             if (isDragging && Mouse.current.leftButton.isPressed)
@@ -85,7 +73,12 @@ namespace CaseMaroon.WorldMapUI
                 if (!MouseDragged)
                 {
                     Vector2Int gridPos = worldMap.GetGridPosition(dragOrigin);
-                    OnGridPositionSelected(gridPos);
+
+                    if(worldMap.gridManager
+                        .ContainsGridPosition(gridPos) )
+                    {
+                        GridPositionSelected(gridPos);
+                    }
                 }
 
                 ResetDrag();
@@ -94,14 +87,11 @@ namespace CaseMaroon.WorldMapUI
             // RIGHT MOUSE HANDLING
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Debug.Log("Right Click");
-
                 Vector2Int gridPos = worldMap.GetGridPosition(mousePos);
                 worldMap.HightlightPos(gridPos);
                 unitHandler.RemoveUnit(gridPos);
             }
         }
-
         private void ResetDrag()
         {
             draggedDistance = 0f;
@@ -127,7 +117,8 @@ namespace CaseMaroon.WorldMapUI
         public GameObject AllUnitsParent;
 
         public event UnitSelected UnitSelected;
-        public event GridPositionSelected GridPositionSelected;
+        public event GridPositionSelected OnGridPositionSelected;
+        public event BuildingPlaced OnBuildingPlaced;
 
         private void Awake()
         {
@@ -180,7 +171,7 @@ namespace CaseMaroon.WorldMapUI
                 AllUnitsParent.transform.localScale = new Vector3(sc, sc, sc);
             }
         }
-        protected virtual void OnGridPositionSelected(Vector2Int gridPos)
+        protected virtual void GridPositionSelected(Vector2Int gridPos)
         {
             // move the unit to the new position
             // this is used to get the center of the shape at the grid position, 
@@ -188,9 +179,9 @@ namespace CaseMaroon.WorldMapUI
 
             //Debug.Log("Position Selected: " + gridPos.ToString());
 
-            CheckUnit(gridPos);
+            //CheckUnit(gridPos);
 
-            GridPositionSelected?.Invoke(gridPos);
+            OnGridPositionSelected?.Invoke(gridPos);
         }
 
         private UnitInfoUI_1 SelectedUnit { get; set; }
@@ -220,10 +211,20 @@ namespace CaseMaroon.WorldMapUI
                 }
                 else
                 {
-                    SpawnTestUnit(gridPos);
+                    if(prevBuildPos != Vector2Int.left)
+                    {
+                        GridPositionSelected(gridPos);
+                    }
+                    else
+                    {
+                        SpawnTestUnit(gridPos);
+
+                    }
                 }
             }
         }
+
+        public Vector2Int prevBuildPos = Vector2Int.left;
 
         protected virtual void OnUnitSelected(UnitInfoUI_1 unit)
         {
@@ -234,7 +235,7 @@ namespace CaseMaroon.WorldMapUI
                 SelectedUnit = unit;
                 SelectedUnit.EnableOutline();
 
-                MoveablePositions = GetReachablePositions(SelectedUnit, SelectedUnit.gridPosition);
+                MoveablePositions = GetUnitReachablePositions(SelectedUnit.data, SelectedUnit.gridPosition);
 
                 MoveablePositions = MoveablePositions.OrderBy(x => x.x).ToList();
 
@@ -294,9 +295,8 @@ namespace CaseMaroon.WorldMapUI
             moveablePositions = HexFunctions.GetSurroundingTiles(unit.gridPosition, 2);
         }
 
-        private List<Vector2Int> GetReachablePositions(UnitInfoUI_1 unit, Vector2Int curPos)
+        private List<Vector2Int> GetUnitReachablePositions(UnitData data, Vector2Int curPos)
         {
-            UnitData data = unit.data;
             int maxMovement = data.MovementPoints;
 
             Dictionary<Vector2Int, int> visited = new Dictionary<Vector2Int, int>();
@@ -333,6 +333,78 @@ namespace CaseMaroon.WorldMapUI
 
             return visited.Keys.ToList();
         }
+        public List<Vector2Int> GetLogisticsPath(Vector2Int start, Vector2Int dest)
+        {
+            UnitData supply = unitCreator.CreateUnit(UnitType.Armored);
+            MovementType mt = supply.MovementType;
+
+            Dictionary<Vector2Int, int> costSoFar = new Dictionary<Vector2Int, int>();
+            Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+
+            List<Vector2Int> openSet = new List<Vector2Int> { start };
+            costSoFar[start] = 0;
+
+            while (openSet.Count > 0)
+            {
+                // Find node in openSet with the lowest cost
+                Vector2Int current = openSet[0];
+                int bestCost = costSoFar[current];
+
+                for (int i = 1; i < openSet.Count; i++)
+                {
+                    Vector2Int pos = openSet[i];
+                    int cost = costSoFar[pos];
+                    if (cost < bestCost)
+                    {
+                        current = pos;
+                        bestCost = cost;
+                    }
+                }
+
+                openSet.Remove(current);
+
+                if (current == dest)
+                    break;
+
+                foreach (Vector2Int neighbor in worldMap.GetSurroudingPositions(current))
+                {
+                    BiomeData biome = worldMap.GetBiomeData(neighbor);
+                    int moveCost = biome.GetMovementCost(mt);
+
+                    if (moveCost < 0 || moveCost == int.MaxValue)
+                        continue; // Impassable
+
+                    int newCost = costSoFar[current] + moveCost;
+
+                    if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
+                    {
+                        costSoFar[neighbor] = newCost;
+                        cameFrom[neighbor] = current;
+
+                        if (!openSet.Contains(neighbor))
+                            openSet.Add(neighbor);
+                    }
+                }
+            }
+
+            // Reconstruct path
+            if (!cameFrom.ContainsKey(dest))
+                return new List<Vector2Int>(); // No path found
+
+            List<Vector2Int> path = new List<Vector2Int>();
+            Vector2Int step = dest;
+            while (step != start)
+            {
+                path.Add(step);
+                step = cameFrom[step];
+            }
+
+            path.Add(start);
+            path.Reverse();
+            return path;
+        }
+
+
 
         public void SpawnTestUnit(Vector2Int gridPos)
         {

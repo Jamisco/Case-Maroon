@@ -40,7 +40,7 @@ namespace Assets.Scripts.Units
             MovementType = MovementType.Feet,
             MovementPoints = 100
         };
-        public static Tank DefaultTank => new Tank(null)
+        public static Tank DefaultTank => new Tank()
         {
             UnitName = "Tank",
             UnitId = "TNK-001",

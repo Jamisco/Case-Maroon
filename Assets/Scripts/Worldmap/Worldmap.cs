@@ -289,7 +289,6 @@ namespace CaseMaroon.WorldMap
             float rain = noiseGenerator.GetRainNoise(pos.x, pos.y);
             float land = noiseGenerator.GetLandNoise(pos.x, pos.y);
 
-
             return biomeConfig.GetMatchingRule(land, temp, rain);
         }
 

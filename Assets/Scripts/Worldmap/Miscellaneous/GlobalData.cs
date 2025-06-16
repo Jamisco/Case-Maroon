@@ -49,5 +49,7 @@ namespace Assets.Scripts.Worldmap.Miscellaneous
                 return raycastResults.Any(r => r.gameObject.layer == UI_WorldMask);
             }
         }
+
+        public enum BuildingType { Headquarters, SupplyDepot}
     }
 }

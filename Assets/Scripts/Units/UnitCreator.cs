@@ -44,6 +44,10 @@ namespace CaseMaroon.Units
 
                     sprite = unitSettings.Where(x => x.unitType == UnitType.Armored).FirstOrDefault().Images[0];
 
+                    unitData = DefaultUnitData.CreateDefaultUnit<Tank>(sprite);
+
+                    ran2DNumber = UnityEngine.Random.Range(10, 99);
+                    unitData.UnitName = ran2DNumber.ToString() + " Armored Division";
 
                     break;
                 case UnitType.Artillery:
