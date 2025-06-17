@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.ProBuilder.MeshOperations;
 
-namespace Assets.Scripts.Worldmap.Miscellaneous
+namespace CaseMaroon.Miscellaneous
 {
     public static class GlobalData
     {
@@ -50,6 +51,62 @@ namespace Assets.Scripts.Worldmap.Miscellaneous
             }
         }
 
-        public enum BuildingType { Headquarters, SupplyDepot}
+        public static bool LeftBtnPressedThisFrame
+        {
+            get
+            {
+                return Mouse.current.leftButton.wasPressedThisFrame;
+            }
+        }
+
+        public static Mesh CombineMeshes(List<Mesh> meshes)
+        {
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+
+            foreach (var mesh in meshes)
+            {
+                CombineInstance ci = new CombineInstance
+                {
+                    mesh = mesh,
+                    transform = Matrix4x4.identity
+                };
+
+                combineInstances.Add(ci);
+            }
+
+            Mesh combinedMesh = new Mesh();
+
+            combinedMesh.CombineMeshes(combineInstances.ToArray(), true, false);
+
+            return combinedMesh;
+        }
+
+        public static Mesh CombineMeshes(List<Mesh> meshes, List<Vector3> worldPos)
+        {
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+
+            if (meshes.Count != worldPos.Count)
+            {
+                Debug.LogError("Meshes and world positions count mismatch.");
+                return null;
+            }
+
+            for (int i = 0; i < meshes.Count; i++)
+            {
+                CombineInstance ci = new CombineInstance
+                {
+                    mesh = meshes[i],
+                    transform = Matrix4x4.TRS(worldPos[i], Quaternion.identity, Vector3.one)
+                };
+                combineInstances.Add(ci);
+            }
+
+            Mesh combinedMesh = new Mesh();
+            combinedMesh.CombineMeshes(combineInstances.ToArray(), true, true);
+
+            return combinedMesh;
+        }
+
+        public enum BuildingType { Headquarters, SupplyDepot, Infantry, Tank}
     }
 }

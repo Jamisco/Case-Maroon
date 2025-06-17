@@ -1,19 +1,18 @@
-﻿using Assets.Scripts.Worldmap.Miscellaneous;
+﻿using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using static Assets.Scripts.Worldmap.Miscellaneous.GlobalData;
+using static CaseMaroon.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.WorldMapUI
 {
     public delegate void UnitSelected(UnitInfoUI_1 unit);
     public delegate void GridPositionSelected(Vector2Int gridPos);
+    public delegate void GridRightClicked(Vector2Int gridPos);
     public delegate void InputStateChanged(InputState newState, BuildingType buildType);
     public delegate void BuildingPlaced(Vector2Int gridPos);
     public enum InputState
@@ -32,6 +31,7 @@ namespace CaseMaroon.WorldMapUI
         private InputState worldInputState;
 
         public InputStateChanged OnInputStateChanged;
+        public GridRightClicked OnGridRightClicked;
 
         public InputState WorldInputState
         {
@@ -68,16 +68,16 @@ namespace CaseMaroon.WorldMapUI
                 draggedDistance = Vector2.Distance(dragOrigin, mousePos);
             }
 
+            Vector2Int clickedPos = worldMap.GetGridPosition(mousePos);
+
             if (isDragging && Mouse.current.leftButton.wasReleasedThisFrame)
             {
                 if (!MouseDragged)
                 {
-                    Vector2Int gridPos = worldMap.GetGridPosition(dragOrigin);
-
                     if(worldMap.gridManager
-                        .ContainsGridPosition(gridPos) )
+                        .ContainsGridPosition(clickedPos) )
                     {
-                        GridPositionSelected(gridPos);
+                        GridPositionSelected(clickedPos);
                     }
                 }
 
@@ -87,9 +87,8 @@ namespace CaseMaroon.WorldMapUI
             // RIGHT MOUSE HANDLING
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Vector2Int gridPos = worldMap.GetGridPosition(mousePos);
-                worldMap.HightlightPos(gridPos);
-                unitHandler.RemoveUnit(gridPos);
+                OnGridRightClicked?.Invoke(clickedPos);
+                unitHandler.RemoveUnit(clickedPos);
             }
         }
         private void ResetDrag()
@@ -179,7 +178,7 @@ namespace CaseMaroon.WorldMapUI
 
             //Debug.Log("Position Selected: " + gridPos.ToString());
 
-            //CheckUnit(gridPos);
+            CheckUnit(gridPos);
 
             OnGridPositionSelected?.Invoke(gridPos);
         }
@@ -208,18 +207,6 @@ namespace CaseMaroon.WorldMapUI
                                     out List<UnitInfoUI_1> unit))
                 {
                     OnUnitSelected(unit.Last());
-                }
-                else
-                {
-                    if(prevBuildPos != Vector2Int.left)
-                    {
-                        GridPositionSelected(gridPos);
-                    }
-                    else
-                    {
-                        SpawnTestUnit(gridPos);
-
-                    }
                 }
             }
         }
@@ -270,7 +257,11 @@ namespace CaseMaroon.WorldMapUI
                 return;
             }
 
-            unitHandler.MoveToPosition(unitInfo, gridPos);
+
+
+            List<Vector2Int> path = GetFastestPath(unitInfo.data, unitInfo.gridPosition, gridPos);
+
+            unitHandler.MoveToPosition_Animate(unitInfo, path);
             DeselectCurrentUnit();
 
             Canvas.ForceUpdateCanvases();
@@ -287,9 +278,6 @@ namespace CaseMaroon.WorldMapUI
                 worldMap.ClearHighlightLayer();
             }
         }
-
-
-
         public void GetMoveablePositions(UnitInfoUI_1 unit, out List<Vector2Int> moveablePositions)
         {
             moveablePositions = HexFunctions.GetSurroundingTiles(unit.gridPosition, 2);
@@ -333,10 +321,10 @@ namespace CaseMaroon.WorldMapUI
 
             return visited.Keys.ToList();
         }
-        public List<Vector2Int> GetLogisticsPath(Vector2Int start, Vector2Int dest)
+
+        public List<Vector2Int> GetFastestPath(UnitData data, Vector2Int start, Vector2Int dest)
         {
-            UnitData supply = unitCreator.CreateUnit(UnitType.Armored);
-            MovementType mt = supply.MovementType;
+            MovementType mt = data.MovementType;
 
             Dictionary<Vector2Int, int> costSoFar = new Dictionary<Vector2Int, int>();
             Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
@@ -403,8 +391,18 @@ namespace CaseMaroon.WorldMapUI
             path.Reverse();
             return path;
         }
+            
+        public List<Vector2Int> GetLogisticsPath(Vector2Int start, Vector2Int dest)
+        {
+            UnitData supply = unitCreator.CreateUnit(UnitType.Armored);
 
+            return GetFastestPath(supply, start, dest);
+        }
 
+        public void SpanwUnit(Vector2Int gridPos, UnitData data)
+        {
+            unitHandler.SpawnUnit(gridPos, data);
+        }
 
         public void SpawnTestUnit(Vector2Int gridPos)
         {
@@ -412,8 +410,12 @@ namespace CaseMaroon.WorldMapUI
 
             UnitData newUnit = unitCreator.CreateUnit(UnitType.Infantry);
 
-
             unitHandler.SpawnUnit(gridPos, newUnit);
+        }
+
+        public Dictionary<Vector2Int, List<UnitInfoUI_1>> GetAllUnits()
+        {
+            return unitHandler.battleUnits;
         }
 
         public void Clear()

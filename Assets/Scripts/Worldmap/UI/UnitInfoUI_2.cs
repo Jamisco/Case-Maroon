@@ -4,7 +4,6 @@ namespace CaseMaroon.WorldMapUI
 {
     public class UnitInfoUI_2 : MonoBehaviour
     {
-        public StatItemCard statItemParent;
         // Start is called before the first frame update
 
         [SerializeField]
@@ -27,13 +26,22 @@ namespace CaseMaroon.WorldMapUI
 
         void Start()
         {
-            statItemParent.gameObject.SetActive(false);
         }
 
         // Update is called once per frame
         void Update()
         {
 
+        }
+
+        public void AddData(StatItemCard stat)
+        {
+            questionObj.SetActive(false);
+
+            stat.transform.SetParent(stat.transform);
+            stat.gameObject.SetActive(true);
+            // Optionally, you can reset the parent to the original prefab
+            // statItemParent.gameObject.SetActive(false);
         }
     }
 }

@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   statItemParent: {fileID: 5078701535376877615, guid: 6611977d0dba75e408bba7974ba4578c, type: 3}
-  statParent: {fileID: 0}
+  statParent: {fileID: 5650359743018793260}
   questionObj: {fileID: 5550423269973327020}
 --- !u!223 &7146703340994864467
 Canvas:
@@ -148,7 +148,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 1
@@ -342,15 +342,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 5
+    m_Left: 10
     m_Right: 5
-    m_Top: 5
+    m_Top: 10
     m_Bottom: 5
-  m_ChildAlignment: 1
+  m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 1
   m_CellSize: {x: 100, y: 15}
-  m_Spacing: {x: 50, y: 3}
+  m_Spacing: {x: 50, y: 5}
   m_Constraint: 0
   m_ConstraintCount: 2
 --- !u!1 &5749201180893555612

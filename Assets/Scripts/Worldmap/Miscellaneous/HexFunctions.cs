@@ -538,6 +538,27 @@ namespace CaseMaroon.WorldMap
             return neighbors;
         }
 
+        /// <summary>
+        /// Returns the side of n1 that connects to n2.
+        /// </summary>
+        /// <param name="n1"></param>
+        /// <param name="n2"></param>
+        /// <returns></returns>
+        public static int GetConnectingSide(Vector2Int n1, Vector2Int n2)
+        {
+            // Returns the side of n1 that connects to n2
+
+            Vector2Int[] neighbors = GetNeighbors(n1);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                if (neighbors[i] == n2)
+                {
+                    return i; // Return sides 1-6
+                }
+            }
+            return -1; // Not connected
+        }
+
         // 6. Update DrawHexShape to use Vector2Int for startPos and return List<Vector2Int>
         public static List<Vector2Int> DrawHexShape(int maxWidth, int minWidth, Vector2Int startPos)
         {

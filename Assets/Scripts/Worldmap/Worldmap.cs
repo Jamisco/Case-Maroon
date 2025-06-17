@@ -21,6 +21,9 @@ namespace CaseMaroon.WorldMap
         public NoiseGenerator noiseGenerator;
 
         [SerializeField]
+        public Vector2 ShapeScale;
+
+        [SerializeField]
         public MeshLayerSettings baseLayer;
 
         [SerializeField]
@@ -75,12 +78,21 @@ namespace CaseMaroon.WorldMap
                 Init();
             }
 
+            ValidateLayerScale();
+        }
+
+        private void ValidateLayerScale()
+        {
+            baseLayer.ShapeSize = ShapeScale;
+            snowLayer.ShapeSize = ShapeScale;
+            highlightLayer.ShapeSize = ShapeScale;
         }
         public void Init()
         {
             gridManager = GetComponent<GridManager>();
             noiseGenerator = GetComponent<NoiseGenerator>();
-            
+
+            ValidateLayerScale();
         }
         public void ComputeNoise()
         {
@@ -202,6 +214,24 @@ namespace CaseMaroon.WorldMap
             // Assign the path to the collider
             polygonCollider.SetPath(0, points);
         }
+        public bool TryGetMouseMapPosition(out Vector2Int gridPos, out Vector3 worldPos)
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            if(gridManager.ContainsWorldPosition(mousePos))
+            {
+                gridPos = gridManager.WorldToGridPosition(mousePos);
+                worldPos = gridManager.GridToWorldPostion(gridPos);
+
+                return true;
+            }
+
+            gridPos = Vector2Int.left;
+            worldPos = Vector3.negativeInfinity;
+
+            return false;
+        }
+
         public Vector2Int GetGridPosition(Vector3 screenPos)
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(screenPos);
@@ -218,15 +248,15 @@ namespace CaseMaroon.WorldMap
         public WorldmapOverlay worldmapOverlay;
         public void HightlightPos(Vector2Int pos)
         {
-            if (gridManager.WithinGridBounds(pos))
-            {
-                OverlayData data = new OverlayData();
+            //if (gridManager.WithinGridBounds(pos))
+            //{
+            //    OverlayData data = new OverlayData();
 
-                data.localPosition = gridManager.GridToWorldPostion(pos);
-                data.HighlightedSides = new bool[6] { false, false, false, false, false, false };
+            //    data.localPosition = gridManager.GridToWorldPostion(pos);
+            //    data.HighlightedSides = new bool[6] { false, false, false, false, false, false };
 
-                worldmapOverlay.AddOverlay(pos, data);
-            }
+            //    worldmapOverlay.AddOverlay(pos, data);
+            //}
         }
 
         public void HightlightPos(List<Vector2Int> pos)
@@ -251,7 +281,7 @@ namespace CaseMaroon.WorldMap
         {
             if (gridManager.WithinGridBounds(pos))
             {
-                HexShape shape = (HexShape)gridManager.GetShape();
+                //HexShape shape = (HexShape)gridManager.GetShape();
 
                //shape.HighlightSide(index);
                 //gridManager.InsertVisualData(pos, shape, highlightLayer.LayerId);

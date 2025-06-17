@@ -3,9 +3,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static Assets.Scripts.Worldmap.Miscellaneous.GlobalData;
+using static CaseMaroon.Miscellaneous.GlobalData;
 
-namespace Assets.Scripts.Worldmap.UI
+namespace CaseMaroon.WorldMapUI
 {
     public class BuildingItemCard : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
@@ -17,7 +17,6 @@ namespace Assets.Scripts.Worldmap.UI
         public void OnPointerClick(PointerEventData eventData)
         {
             WorldUI.Instance.OnInputStateChanged?.Invoke(InputState.PlacingBuilding, buildType);
-
         }
 
         public void OnPointerEnter(PointerEventData eventData)

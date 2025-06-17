@@ -72,13 +72,13 @@ namespace CaseMaroon.WorldMapUI
         }
 
 
-        public void MoveToPosition(UnitInfoUI_1 unitInfo, Vector2Int newPos)
+        public void MoveToPosition_Instant(UnitInfoUI_1 unitInfo, Vector2Int newPos)
         {
             Vector3 worldPos = grid.GridToWorldPostion(unitInfo.gridPosition);
 
             Vector2Int oldPos = unitInfo.gridPosition;
 
-            unitInfo.MoveToPosition(worldPos);
+            unitInfo.MoveToPosition_Instant(worldPos);
                 
             RemoveUnitFromList(unitInfo.gridPosition, unitInfo);
             AddUnitToList(newPos, unitInfo);
@@ -87,6 +87,21 @@ namespace CaseMaroon.WorldMapUI
 
             StackUnits(oldPos);
             StackUnits(newPos);
+        }
+
+        public void MoveToPosition_Animate(UnitInfoUI_1 unitInfo, List<Vector2Int> gridPositions)
+        {
+            unitInfo.MoveToPosition_Animate(gridPositions);
+
+            Vector2Int oldPos = unitInfo.gridPosition;
+
+            RemoveUnitFromList(unitInfo.gridPosition, unitInfo);
+            AddUnitToList(gridPositions.Last(), unitInfo);
+
+            unitInfo.gridPosition = gridPositions.Last();
+
+            StackUnits(oldPos);
+            StackUnits(unitInfo.gridPosition);
         }
 
         private void AddUnitToList(Vector2Int gridPos,  UnitInfoUI_1 unit)

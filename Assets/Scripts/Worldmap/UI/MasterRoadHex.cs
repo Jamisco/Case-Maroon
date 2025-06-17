@@ -9,6 +9,7 @@ namespace CaseMaroon.WorldMapUI
 {
     public class MasterRoadHex : MonoBehaviour
     {
+        // consider making this class no monobehavior
         public HexagonalShape baseShape;
         private Mesh centerMesh;
 
@@ -27,9 +28,7 @@ namespace CaseMaroon.WorldMapUI
         private void Start()
         {
             roadMeshes.Clear();
-        }
-        public Mesh GenerateHexWithRoad(string sideMask)
-        {
+
             baseShape.scale = new Vector2(mapScale, mapScale);
 
             baseShape.UpdateShape();
@@ -39,14 +38,30 @@ namespace CaseMaroon.WorldMapUI
             List<Vector3> vector3s = hexMesh.vertices.ToList();
 
             vector3s = vector3s.
-                Select(v => new Vector3(v.x * roadScale, 
+                Select(v => new Vector3(v.x * roadScale,
                                         v.y * roadScale, 0)).ToList();
 
             hexMesh.vertices = vector3s.ToArray();
 
             centerMesh = hexMesh;
+        }
 
-            Mesh mesh = AddRoads(sideMask);
+        // modify colors to take in 7, or pass in a center color in future
+        public Mesh GenerateHexWithRoad(string sideMask, List<Color> colors)
+        {
+            if (centerMesh == null || centerMesh.vertexCount < 6)
+            {
+                Debug.LogError("Center mesh is not initialized or invalid.");
+                return null;
+            }
+
+            if(sideMask.Length != 6 || colors.Count != 6)
+            {
+                Debug.LogError("Side mask vs Color mask must be 6 bits long.");
+                return null;
+            }
+
+            Mesh mesh = AddRoads(sideMask.ToCharArray(), colors);
 
             if (mesh != null)
             {
@@ -57,22 +72,8 @@ namespace CaseMaroon.WorldMapUI
 
             return mesh;
         }
-        private Mesh AddRoads(string sideMask)
+        private Mesh AddRoads(char[] bits, List<Color> colors)
         {
-            if (centerMesh == null || centerMesh.vertexCount < 6)
-            {
-                Debug.LogError("Center mesh is not initialized or invalid.");
-                return null;
-            }
-
-            char[] bits = sideMask.ToCharArray();
-
-            if (bits.Length != 6)
-            {
-                Debug.LogError("Side mask must be 6 bits long.");
-                return null;
-            }
-
             Vector3[] innerVerts = centerMesh.vertices;
             Vector3[] outerVerts = baseShape.ShapeMesh.GetMesh().vertices;
 
@@ -100,6 +101,11 @@ namespace CaseMaroon.WorldMapUI
                 Mesh roadMesh = new Mesh();
                 roadMesh.vertices = new Vector3[] { v0, v1, v2, v3 };
                 roadMesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
+
+                Color col = colors[i0];
+
+                roadMesh.colors = Enumerable.Repeat(col, 4).ToArray();
+
                 roadMesh.uv = new Vector2[]
                 {
                     new Vector2(0, 0),
@@ -155,7 +161,8 @@ namespace CaseMaroon.WorldMapUI
 
             if (GUILayout.Button("Test Hex"))
             {
-                exampleScript.GenerateHexWithRoad(exampleScript.testMask);
+                List<Color> cols = Enumerable.Repeat(Color.white, 6).ToList();
+                exampleScript.GenerateHexWithRoad(exampleScript.testMask, cols);
             }
         }
     }

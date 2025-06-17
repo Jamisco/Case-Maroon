@@ -1,5 +1,7 @@
-﻿using CaseMaroon.WorldMapUI;
+﻿using CaseMaroon.WorldMap;
+using CaseMaroon.WorldMapUI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,7 +59,7 @@ namespace CaseMaroon.Units
 
         public Vector2Int gridPosition;
 
-        public void MoveToPosition(Vector3 worldPos)
+        public void MoveToPosition_Instant(Vector3 worldPos)
         {
             RectTransform rect = GetComponent<RectTransform>();
 
@@ -67,7 +69,61 @@ namespace CaseMaroon.Units
             // Apply new position with preserved Z
             rect.position = new Vector3(worldPos.x, worldPos.y, currentZ);
         }
+        public void MoveToPosition_Animate(List<Vector2Int> gridPositions)
+        {
+            List<Vector3> worldPath = gridPositions
+                .Select(pos => Worldmap.Instance.gridManager.GridToWorldPostion(pos))
+                .ToList();
 
+            PsuedoDrain(gridPositions);
+
+            StartCoroutine(MoveAlongPath(worldPath, 1f)); // 1 second total movement time
+        }
+
+        private IEnumerator MoveAlongPath(List<Vector3> path, float duration)
+        {
+            // Preserve current world Z position so we can reset it
+
+            RectTransform rect = GetComponent<RectTransform>();
+
+            float currentZ = rect.position.z;
+
+            if (path.Count < 2)
+                yield break;
+
+            float totalDistance = path.Zip(path.Skip(1), Vector3.Distance).Sum();
+            float timeSoFar = 0f;
+            int currentIndex = 0;
+
+            Vector3 start = path[0];
+            Vector3 end = path[1];
+            float segmentDistance = Vector3.Distance(start, end);
+            float segmentTime = (segmentDistance / totalDistance) * duration;
+
+            while (currentIndex < path.Count - 1)
+            {
+                start = path[currentIndex];
+                end = path[currentIndex + 1];
+                segmentDistance = Vector3.Distance(start, end);
+                segmentTime = (segmentDistance / totalDistance) * duration;
+
+                float t = 0f;
+                while (t < 1f)
+                {
+                    t += Time.deltaTime / segmentTime;
+                    transform.position = Vector3.Lerp(start, end, Mathf.Clamp01(t));
+                    yield return null;
+                }
+
+                currentIndex++;
+            }
+
+            transform.position = path[^1]; // Snap to final position
+                                           // Preserve current world Z position
+
+            Vector3 worldPos = rect.position;
+            rect.position = new Vector3(worldPos.x, worldPos.y, currentZ);
+        }
         public void StackUnit(int index, Vector3 worldPos)
         {
             RectTransform rect = transform.GetComponent<RectTransform>();
@@ -99,24 +155,45 @@ namespace CaseMaroon.Units
             UIOutline.enabled = true;
         }
 
+
+        private void PsuedoDrain(List<Vector2Int> path)
+        {
+            int percentDrain = 2;
+
+            // hex travelled * percent Drain
+            int pReduction = 30;
+
+            data.MovementPoints = data.MovementPoints - pReduction;
+            ClampMove();
+        }
+
         public void DisableOutline()
         {
             UIOutline.enabled = false;
         }
 
-        GameObject remove = null;
+        GameObject u2Object = null;
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if(remove != null)
+            if(u2Object != null)
             {
                 return;
             }
 
-            UnitInfoUI_2 u2 = WorldMapUI.WorldUI.Instance.uiManager.unitInfo_2;
+            UnitInfoUI_2 u2Prefab = WorldMapUI.WorldUI.Instance.uiManager.unitInfo_2;
+            UnitInfoUI_2 u2Obj = Instantiate(u2Prefab, this.transform);
 
-            remove = Instantiate(u2.gameObject, this.transform);
+            StatItemCard statPrefab = WorldUI.Instance.uiManager.starItemCard;
+            StatItemCard statItem = Instantiate(statPrefab, u2Obj.transform);
 
-            RectTransform u2Info = remove.GetComponent<RectTransform>();
+            u2Object = u2Obj.gameObject;
+
+            statItem.Label = "Move Points: ";
+            statItem.Value = data.MovementPoints.ToString();
+
+            u2Obj.AddData(statItem);
+
+            RectTransform u2Info = u2Object.GetComponent<RectTransform>();
 
             RectTransform cur = transform.GetComponent<RectTransform>();
 
@@ -128,9 +205,28 @@ namespace CaseMaroon.Units
         }
         public void OnPointerExit(PointerEventData eventData)
         {
-            Destroy(remove);
+            Destroy(u2Object);
         }
 
+        public void SupplyUnit(int move)
+        {
+            data.MovementPoints += move;
 
+            ClampMove();
+        }
+
+        private void ClampMove()
+        {
+            // clmapo movement to 0 and 100
+
+            if (data.MovementPoints < 0)
+            {
+                data.MovementPoints = 0;
+            }
+            else if (data.MovementPoints > 100)
+            {
+                data.MovementPoints = 100;
+            }
+        }
     }
 }
