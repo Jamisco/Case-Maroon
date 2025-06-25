@@ -1,10 +1,9 @@
-﻿using Assets.Scripts.Worldmap.Miscellaneous;
+﻿using UnityEngine;
 using UnityEditor;
-using UnityEngine;
+using CaseMaroon.Miscellaneous;
 
-namespace Assets.Case_Maroon
+namespace CaseMaroon
 {
-
     [CustomPropertyDrawer(typeof(Vector2Range))]
     public class Vector2RangeAttributeDrawer : PropertyDrawer
     {

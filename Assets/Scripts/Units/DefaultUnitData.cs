@@ -14,7 +14,7 @@ namespace Assets.Scripts.Units
         public static Infantry DefaultInfantry => new Infantry()
         {
             UnitName = "Infantry",
-            UnitId = "INF-001",
+            UnitId = 11111,
             Image = null,
             AtkPoints = new CombatPoints()
             {
@@ -43,7 +43,7 @@ namespace Assets.Scripts.Units
         public static Tank DefaultTank => new Tank()
         {
             UnitName = "Tank",
-            UnitId = "TNK-001",
+            UnitId = 22222,
             Image = null,
             AtkPoints = new CombatPoints()
             {
@@ -71,7 +71,7 @@ namespace Assets.Scripts.Units
         public static Artillery DefaultArtillery => new Artillery(null)
         {
             UnitName = "Artillery",
-            UnitId = "ART-001",
+            UnitId = 333333,
             Image = null,
             AtkPoints = new CombatPoints()
             {

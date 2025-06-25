@@ -69,18 +69,6 @@ namespace GridMapMaker
         /// </summary>
         public BoundsInt GridBounds => gridBounds;
 
-        /// <summary>
-        /// Checks if the given grid position is within the bounds of the grid. This is useful for checking if a grid position is valid or not.
-        /// </summary>
-        /// <param name="gridPosition"></param>
-        /// <returns></returns>
-        public bool WithinGridBounds(Vector2Int pos)
-        {
-            int x = pos.x, y = pos.y;
-            return x >= gridBounds.xMin && x <= gridBounds.xMax &&
-                   y >= gridBounds.yMin && y <= gridBounds.yMax;
-        }
-
         public enum ColliderType
         {
             None,
@@ -1142,9 +1130,14 @@ namespace GridMapMaker
                 localPosition = new Vector3(localPosition.x, 0, localPosition.z);
             }
 
-            return LocalBounds.Contains(localPosition);
-        }
+            Vector3 min = LocalBounds.min;
+            Vector3 max = LocalBounds.max;
 
+            return
+                localPosition.x >= min.x && localPosition.x <= max.x &&
+                localPosition.y >= min.y && localPosition.y <= max.y &&
+                localPosition.z >= min.z && localPosition.z <= max.z;
+        }
         public bool ContainsWorldPosition(Vector3 worldPosition)
         {
             Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
@@ -1159,7 +1152,12 @@ namespace GridMapMaker
         /// <returns></returns>
         public bool ContainsGridPosition(Vector2Int gridPosition)
         {
-            return gridBounds.Contains((Vector3Int)gridPosition);
+            Vector3Int pos = (Vector3Int)gridPosition;
+
+            return
+                pos.x >= gridBounds.xMin && pos.x <= gridBounds.xMax &&
+                pos.y >= gridBounds.yMin && pos.y <= gridBounds.yMax &&
+                pos.z >= gridBounds.zMin && pos.z <= gridBounds.zMax;
         }
 
         /// <summary>

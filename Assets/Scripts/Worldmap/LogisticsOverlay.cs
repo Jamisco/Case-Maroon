@@ -16,7 +16,6 @@ namespace CaseMaroon.WorldMap
         {
             Dictionary<Vector2Int, List<UnitInfoUI_1>> units = WorldUI.Instance.GetAllUnits();
 
-
             List<Mesh> supplyLinks = new List<Mesh>();
 
             foreach (var kvp in units)

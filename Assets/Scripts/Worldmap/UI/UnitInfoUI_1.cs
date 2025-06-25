@@ -42,7 +42,7 @@ namespace CaseMaroon.Units
         public void Initiliaze(UnitData data)
         {
             this.data = data;
-            this.name = data.UnitId;
+            this.name = data.UnitName;
 
             image.sprite = data.Image;
             unitName.text = data.UnitName;

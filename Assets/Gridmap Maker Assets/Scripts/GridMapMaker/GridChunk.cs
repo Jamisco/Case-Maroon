@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using static GridMapMaker.GridManager;
-using static GridMapMaker.MeshLayer;
 
 namespace GridMapMaker
 {
@@ -100,7 +99,6 @@ namespace GridMapMaker
             chunkGridBounds.zMax = 1;
 
             chunkColliderType = col;
-
 
             // a chunk local position is simply the position of the first cell in the chunk
             // thus, the chunk position can only be known after a layer has been added
@@ -260,21 +258,27 @@ namespace GridMapMaker
         {
             Vector3Int boundsPosition = (Vector3Int)gridPosition;
 
-            if (ChunkGridBounds.Contains(boundsPosition))
-            {
-                return true;
-            }
-
-            return false;
+            // the reason we check this way is because bounds are not inclusive on the max side, so we need to check if the grid position is within the bounds of the chunk.
+            return
+                boundsPosition.x >= chunkGridBounds.xMin &&
+                boundsPosition.x <= chunkGridBounds.xMax &&
+                boundsPosition.y >= chunkGridBounds.yMin &&
+                boundsPosition.y <= chunkGridBounds.yMax &&
+                boundsPosition.z >= chunkGridBounds.zMin &&
+                boundsPosition.z <= chunkGridBounds.zMax;
         }
         public bool ContainsLocalPosition(Vector3 localPosition, string layerId)
         {
             if (GetLayerBounds(layerId, out Bounds bounds))
             {
-                if (bounds.Contains(localPosition))
-                {
-                    return true;
-                }
+                Vector3 min = bounds.min;
+                Vector3 max = bounds.max;
+
+                // the reason we check this way is because bounds are not inclusive on the max side, so we need to check if the local position is within the bounds of the layer.
+                return
+                    localPosition.x >= min.x && localPosition.x <= max.x &&
+                    localPosition.y >= min.y && localPosition.y <= max.y &&
+                    localPosition.z >= min.z && localPosition.z <= max.z;
             }
 
             return false;
@@ -289,11 +293,9 @@ namespace GridMapMaker
         {
             if (ChunkLayers.ContainsKey(layerId))
             {
-                bounds = ChunkLayers[layerId].LayerBounds;
+                GridShape shape = ChunkLayers[layerId].LayerGridShape;
 
-                Vector3 offset = chunkLocalBounds.min;
-
-                //bounds.center += offset;
+                bounds = shape.GetGridBounds(startGridPosition, endGridPosition);
 
                 return true;
             }

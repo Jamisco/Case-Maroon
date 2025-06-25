@@ -37,6 +37,7 @@ namespace CaseMaroon.Units
 
                     int ran2DNumber = UnityEngine.Random.Range(10, 99);
 
+                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
                     unitData.UnitName = ran2DNumber.ToString() + " Infantry Division";
 
                     break;
@@ -46,11 +47,13 @@ namespace CaseMaroon.Units
 
                     unitData = DefaultUnitData.CreateDefaultUnit<Tank>(sprite);
 
+                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
                     ran2DNumber = UnityEngine.Random.Range(10, 99);
                     unitData.UnitName = ran2DNumber.ToString() + " Armored Division";
 
                     break;
                 case UnitType.Artillery:
+
 
                     sprite = unitSettings.Where(x => x.unitType == UnitType.Artillery).FirstOrDefault().Images[0];
 

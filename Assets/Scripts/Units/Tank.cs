@@ -10,12 +10,7 @@ namespace CaseMaroon.Units
 {
     public class Tank : UnitData
     {
-        //public Tank(Sprite image)
-        //{
-        //    Tank def = DefaultUnitData.DefaultTank;
-        //    CopyFields(def);
-        //    Image = image;
-        //}
+        public override UnitType UnitType => UnitType.Armored;
 
         public static Tank CreateDefaultUnit(Sprite image)
         {

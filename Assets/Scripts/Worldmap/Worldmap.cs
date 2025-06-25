@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using static CaseMaroon.WorldMap.BiomeData;
-using static CaseMaroon.WorldMap.WorldmapOverlay;
 
 namespace CaseMaroon.WorldMap
 {
     public delegate void WorldGenerated(Worldmap map);
-
     public class Worldmap : MonoBehaviour
     {
         public static Worldmap Instance { get; private set; }
         public event WorldGenerated OnWorldGenerated;
 
+
+        public WorldMapConfig worldMapConfig;
         // create grid generated event
         public GridManager gridManager;
         public BiomeConfig biomeConfig;
@@ -43,8 +43,7 @@ namespace CaseMaroon.WorldMap
         [NonSerialized]
         public bool generating = false;
         //
-        [NonSerialized]
-        public bool gridGenerated = false;
+        public bool WorldGenerated { get; private set; } = false;
 
         private void Awake()
         {
@@ -62,12 +61,14 @@ namespace CaseMaroon.WorldMap
             try
             {
                 Init();
-                GenerateGrid();
+
+                BackendMessenger.Instance.UploadMapData(worldMapConfig);
+
+                //GenerateGrid();
             }
             catch (System.Exception ex)
             {
-                Debug.Log("Can't Genetate World map, " + ex.Message);
-                throw;
+                Debug.Log("Can't Generate World map, " + ex.Message);
             }
         }
 
@@ -151,6 +152,7 @@ namespace CaseMaroon.WorldMap
 
             generating = false;
 
+            WorldGenerated = true;
             OnWorldGenerated?.Invoke(this);
         }   
 
@@ -263,7 +265,7 @@ namespace CaseMaroon.WorldMap
         {
             foreach (Vector2Int p in pos)
             {
-                if (gridManager.WithinGridBounds(p))
+                if (gridManager.ContainsGridPosition(p))
                 {
                     gridManager.InsertVisualData(p, biomeConfig.HighlightVisualData, highlightLayer.LayerId);
                 }
@@ -279,7 +281,7 @@ namespace CaseMaroon.WorldMap
 
         public void HighlightSide(Vector2Int pos, int index)
         {
-            if (gridManager.WithinGridBounds(pos))
+            if (gridManager.ContainsGridPosition(pos))
             {
                 //HexShape shape = (HexShape)gridManager.GetShape();
 
@@ -304,7 +306,7 @@ namespace CaseMaroon.WorldMap
 
             for (int i = positions.Count - 1; i >= 0; i--)
             {
-                if (!gridManager.WithinGridBounds(positions[i]))
+                if (!gridManager.ContainsGridPosition(positions[i]))
                 {
                     positions.RemoveAt(i);
                 }
@@ -382,6 +384,11 @@ namespace CaseMaroon.WorldMap
 
             Worldmap exampleScript = (Worldmap)target;
 
+            if (GUILayout.Button("Restart "))
+            {
+                exampleScript.Start();
+            }
+
             if (GUILayout.Button("Generate Grid"))
             {
                 exampleScript.Init();
@@ -391,6 +398,16 @@ namespace CaseMaroon.WorldMap
             if (GUILayout.Button("Clear Grid"))
             {
                 exampleScript.Clear();
+            }
+
+            if (GUILayout.Button("Update Config from Map"))
+            {
+                exampleScript.worldMapConfig.UpdateConfigFromMap(exampleScript);
+            }
+
+            if (GUILayout.Button("Update Map from Config"))
+            {
+                exampleScript.worldMapConfig.UpdateMapFromConfig(exampleScript);
             }
         }
     }

@@ -30,15 +30,19 @@ namespace CaseMaroon.Units
 
     public abstract class UnitData
     {
-        public virtual Sprite Image { get; set; }
+        public virtual int UnitId { get; set; }
         public virtual string UnitName { get; set; }
-        public virtual string UnitId { get; set; }
-        public virtual CombatPoints AtkPoints { get; set; }
-        public virtual CombatPoints DefPoints { get; set; }
+        public abstract UnitType UnitType { get; }
         public virtual int HealthPoints { get; set; }
         public virtual int EnergyPoints { get; set; }
-        public virtual MovementType MovementType { get; set; } 
         public virtual int MovementPoints { get; set; }
+        public virtual Vector2Int GridPosition { get; set; } = Vector2Int.left; // Default value indicating no position set
+        public virtual CombatPoints AtkPoints { get; set; }
+        public virtual CombatPoints DefPoints { get; set; }
+        public virtual MovementType MovementType { get; set; }
+        public virtual Sprite Image { get; set; }
+
+
 
         /// <summary>
         /// Copy fields from another UnitData instance to this instance.

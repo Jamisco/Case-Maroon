@@ -1,5 +1,4 @@
-﻿using GridMapMaker;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -144,7 +143,7 @@ namespace CaseMaroon.WorldMap
             public float multiplier;
             public float scale;
 
-            [Range(1, 20)]
+            [Range(0, 20)]
             [SerializeField] int fractal;
 
             [Range(0, 1)]

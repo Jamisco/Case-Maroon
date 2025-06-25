@@ -3,9 +3,6 @@ using CaseMaroon.WorldMap;
 using GridMapMaker;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace CaseMaroon.WorldMapUI
@@ -45,6 +42,7 @@ namespace CaseMaroon.WorldMapUI
 
             AddUnitToList(gridPos, unitUI);
             unitUI.gridPosition = gridPos;
+            data.GridPosition = gridPos;
         }
 
         public void RemoveUnit(UnitInfoUI_1 unitInfo)

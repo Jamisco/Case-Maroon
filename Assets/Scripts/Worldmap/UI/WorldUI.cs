@@ -25,6 +25,9 @@ namespace CaseMaroon.WorldMapUI
     }
     public class WorldUI : MonoBehaviour
     {
+        // we can either choose to further optimze the logistics system or continue on to the next step,
+        // as it currently stands the logistics system is passable
+        // I recommend we continue
         public static WorldUI Instance { get; private set; }
 
         public UnitUIHandler unitHandler;
@@ -68,8 +71,17 @@ namespace CaseMaroon.WorldMapUI
                 draggedDistance = Vector2.Distance(dragOrigin, mousePos);
             }
 
-            Vector2Int clickedPos = worldMap.GetGridPosition(mousePos);
+            Vector2Int clickedPos = Vector2Int.left;
 
+            try
+            {
+                clickedPos = worldMap.GetGridPosition(mousePos);
+            }
+            catch (System.Exception)
+            {
+
+            }
+            
             if (isDragging && Mouse.current.leftButton.wasReleasedThisFrame)
             {
                 if (!MouseDragged)
@@ -154,9 +166,12 @@ namespace CaseMaroon.WorldMapUI
 
         private void Update()
         {
-            CheckMouse();
-        }
-        
+            if (Worldmap.Instance.WorldGenerated)
+            {
+                CheckMouse();
+            }
+
+        }    
         private void ValidateUnitParentObj()
         {
             // remember that the scale of this object must be .01 for the unit ui to fit
@@ -181,6 +196,8 @@ namespace CaseMaroon.WorldMapUI
             CheckUnit(gridPos);
 
             OnGridPositionSelected?.Invoke(gridPos);
+
+            //BackendMessenger.Instance.SendGridPos(gridPos);
         }
 
         private UnitInfoUI_1 SelectedUnit { get; set; }
@@ -256,8 +273,6 @@ namespace CaseMaroon.WorldMapUI
                 DeselectCurrentUnit();
                 return;
             }
-
-
 
             List<Vector2Int> path = GetFastestPath(unitInfo.data, unitInfo.gridPosition, gridPos);
 
@@ -399,11 +414,10 @@ namespace CaseMaroon.WorldMapUI
             return GetFastestPath(supply, start, dest);
         }
 
-        public void SpanwUnit(Vector2Int gridPos, UnitData data)
+        public void SpawnUnit(Vector2Int gridPos, UnitData data)
         {
             unitHandler.SpawnUnit(gridPos, data);
         }
-
         public void SpawnTestUnit(Vector2Int gridPos)
         {
             ValidateUnitParentObj();
@@ -412,12 +426,10 @@ namespace CaseMaroon.WorldMapUI
 
             unitHandler.SpawnUnit(gridPos, newUnit);
         }
-
         public Dictionary<Vector2Int, List<UnitInfoUI_1>> GetAllUnits()
         {
             return unitHandler.battleUnits;
         }
-
         public void Clear()
         {
 #if UNITY_EDITOR

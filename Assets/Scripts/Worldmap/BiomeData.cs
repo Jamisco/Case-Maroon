@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using Assets.Scripts.Worldmap.Miscellaneous;
+﻿using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMapUI;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace CaseMaroon.WorldMap
 {

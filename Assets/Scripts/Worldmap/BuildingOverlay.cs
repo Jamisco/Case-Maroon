@@ -195,7 +195,10 @@ namespace CaseMaroon.WorldMap
                     UnitData inf = WorldUI.Instance.unitCreator
                                         .CreateUnit(UnitType.Infantry);
 
-                    WorldUI.Instance.SpanwUnit(gridPos, inf);
+                    BackendTester.Instance
+                        .SpawnUnit(gridPos, inf);
+
+                    //WorldUI.Instance.SpanwUnit(gridPos, inf);
 
                     break;
                 case BuildingType.Tank:
@@ -203,7 +206,7 @@ namespace CaseMaroon.WorldMap
                     UnitData tank = WorldUI.Instance.unitCreator
                                         .CreateUnit(UnitType.Armored);
 
-                    WorldUI.Instance.SpanwUnit(gridPos, tank);
+                    WorldUI.Instance.SpawnUnit(gridPos, tank);
 
                     break;
                 default:
