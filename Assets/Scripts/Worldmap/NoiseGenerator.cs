@@ -23,6 +23,8 @@ namespace CaseMaroon.WorldMap
         float[,] rainValues;
         float[,] tempValues;
 
+        public float NoiseHash { get; private set; }
+
         AverageValues avg;
         public bool NoiseModified;
 
@@ -37,18 +39,20 @@ namespace CaseMaroon.WorldMap
         public void ComputeNoises(Vector2Int planetSize, bool multiThread = false)
         {
             // if the noise settings are not modified, then no need to recompute the noise
-            if (!NoiseModified && planetSize == landNoiseSettings.PlanetSize)
+            if (!NoiseModified && planetSize == landNoiseSettings.gridSize)
             {
                 return;
             }
 
-            landNoiseSettings.PlanetSize = planetSize;
-            rainNoiseSettings.PlanetSize = planetSize;
-            tempNoiseSettings.PlanetSize = planetSize;
+            landNoiseSettings.gridSize = planetSize;
+            rainNoiseSettings.gridSize = planetSize;
+            tempNoiseSettings.gridSize = planetSize;
 
             landNoiseSettings.Init();
             rainNoiseSettings.Init();
             tempNoiseSettings.Init();
+
+            NoiseHash = 0;
 
             avg = new AverageValues(planetSize.x * planetSize.y);
             avg.Init("Land");
@@ -80,6 +84,8 @@ namespace CaseMaroon.WorldMap
                         ComputeLandNoise(i, j);
                         ComputeRainNoise(i, j);
                         ComputeTempNoise(i, j);
+
+                        NoiseHash += landValues[i, j] + rainValues[i, j] + tempValues[i, j];
                     }
                 }
             }
@@ -110,7 +116,6 @@ namespace CaseMaroon.WorldMap
             tempValues[x, y] = tempNoiseSettings.GetNoise(x, y);
             avg.Add("Temp", tempValues[x, y]);
         }
-
         public float GetLandNoise(int x, int y)
         {
             return landValues[x, y];
@@ -154,7 +159,9 @@ namespace CaseMaroon.WorldMap
 
             public Vector2Int offset;
 
-            public Vector2Int PlanetSize { get; set; }
+            [NonSerialized]
+            [HideInInspector]
+            public Vector2Int gridSize;
             // code this part
 
             public void Init()
@@ -166,18 +173,23 @@ namespace CaseMaroon.WorldMap
             }
             public float GetNoise(int x, int y)
             {
-                float tempNoise = noiseGenerator.GetNoise((float)x / (PlanetSize.x + offset.x), (float)y / (PlanetSize.y + offset.y));
+                float nx = (float) (x / ((float)gridSize.x + offset.x));
+                float ny = (float) (y / ((float)gridSize.y + offset.y));
+
+                float tempNoise = noiseGenerator.GetNoise(nx, ny);
 
                 tempNoise *= multiplier;
 
                 tempNoise = Mathf.Clamp(tempNoise, minValue, maxValue);
+
+                tempNoise = (float)Math.Round(tempNoise, 3);
 
                 return tempNoise;
             }
 
             public float GetNoise2(int x, int y)
             {
-                float tempNoise = noiseGenerator.GetNoise((float)x / (PlanetSize.x + offset.x), (float)y / (PlanetSize.y + offset.y));
+                float tempNoise = noiseGenerator.GetNoise((float)x / (gridSize.x + offset.x), (float)y / (gridSize.y + offset.y));
 
                 tempNoise *= multiplier;
 

@@ -1,17 +1,14 @@
-﻿using CaseMaroon.Miscellaneous;
-using CaseMaroon.Units;
-using System.Collections;
-using System.Text;
-using UnityEngine;
-using UnityEngine.Networking;
-using static CaseMaroon.WorldMap.BackendMessenger;
+﻿using CaseMaroon.Units;
 using CaseMaroon.WorldMapUI;
-using static CaseMaroon.Miscellaneous.JsonHelper;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
-using Debug = UnityEngine.Debug;
-using System;
+using System.Text;
 using System.Timers;
+using UnityEngine;
+using UnityEngine.Networking;
+using static CaseMaroon.Miscellaneous.JsonHelper;
+using Debug = UnityEngine.Debug;
 
 namespace CaseMaroon.WorldMap
 {
@@ -167,14 +164,15 @@ namespace CaseMaroon.WorldMap
         {
             StartCoroutine(SpawnUnit_Post(gridPos, data));
         }
-        public void UploadMapData(WorldMapConfig worldConfig)
+        public void UploadMapConfig(Worldmap worldMap)
         {
-            if (worldConfig == null)
+            if (worldMap == null)
             {
-                Debug.LogError("WorldMapConfig is null, cannot upload map data.");
+                Debug.LogError("worldMap is null, cannot upload map data.");
                 return;
             }
-            StartCoroutine(UploadMapData_Post(worldConfig));
+
+            StartCoroutine(GenerateGrid_Post(worldMap));
         }
 
         private IEnumerator SendPostRequest(string endpoint, string json, System.Action<UnityWebRequest> onComplete)
@@ -220,22 +218,51 @@ namespace CaseMaroon.WorldMap
                     Debug.LogError("Error spawning unit: " + request.error);
             });
         }
-        private IEnumerator UploadMapData_Post(WorldMapConfig worldConfig)
+        private IEnumerator GenerateGrid_Post(Worldmap worldMap)
         {
-            string url = BASE_URL + "mapdata";
-            string json = JsonUtility.ToJson(worldConfig, true);
+            string url = BASE_URL + "GenerateGrid";
 
-            yield return SendPostRequest("mapdata", json, (request) =>
+            MapConfig mc = new MapConfig(worldMap);
+
+            string json = JsonUtility.ToJson(mc, true);
+
+            yield return SendPostRequest("GenerateGrid", json, (request) =>
             {
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    Worldmap.Instance.GenerateGrid();
+                    Debug.Log("Map data uploaded successfully");
+
+                    MapConfigResponse response = MapConfigResponse.FromJson(request.downloadHandler.text);
+
+                    Worldmap.Instance.ComputeNoise();
+
+                    float clientHash = Worldmap.Instance.noiseGenerator.NoiseHash;
+
+                    float serverHash = response.noiseHash;
+
+                    // will only be work to a gridSize of size 2000 x 2000
+                    float tolerancePercent = 0.1f; // e.g., 0.1% tolerance
+
+                    float difference = Mathf.Abs(clientHash - serverHash);
+                    float percentDifference = (difference / Mathf.Abs(serverHash)) * 100f;
+
+                    if (percentDifference <= tolerancePercent)
+                    {
+                        string grid = worldMap.gridManager.GridSize.x + "  x " + worldMap.gridManager.GridSize.y;
+
+                        Debug.Log($"Hash match! Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}% "  + grid);
+
+                        Worldmap.Instance.GenerateGrid();
+                    }
+                    else
+                    {
+                        Debug.LogError($"Hash mismatch! Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}%");
+                    }
                 }
                 else
                 {
                     Debug.LogError("Error uploading map data: " + request.error);
                 }
-
             });
         }
 

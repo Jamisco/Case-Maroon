@@ -1,6 +1,9 @@
 ﻿using CaseMaroon.Units;
+using CaseMaroon.WorldMap;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using static CaseMaroon.WorldMap.BiomeGenerator;
 using static CaseMaroon.WorldMap.NoiseGenerator;
 
 namespace CaseMaroon.Miscellaneous
@@ -36,7 +39,7 @@ namespace CaseMaroon.Miscellaneous
             }
         }
 
-        [System.Serializable]
+        [Serializable]
         public struct SpawnUnitPayload
         {
             public Vector2Int position;
@@ -49,16 +52,84 @@ namespace CaseMaroon.Miscellaneous
             }
         }
 
-        public struct MapGenerationSettings
+        [Serializable]
+        public struct MapConfig
         {
-            public Vector2 ShapeScale;
-            public Vector2Int GridSize;
-            public Vector2Int ChunkSize;
+            public WorldmapConfig worldmapConfig;
+            public NoiseConfig noiseConfig;
+            public BiomeConfig biomeConfig;
 
-            public NoiseSettings LandNoiseSettings;
-            public NoiseSettings RainNoiseSettings;
-            public NoiseSettings TempNoiseSettings;
+            public MapConfig(Worldmap map)
+            {
+                worldmapConfig = new WorldmapConfig(map);
+                noiseConfig = new NoiseConfig(map.noiseGenerator);
+                biomeConfig = new BiomeConfig(map.biomeGenerator);
+            }
         }
+
+        [Serializable]
+        public struct MapConfigResponse
+        {
+            public string message;
+            public bool sucess;
+            public float noiseHash;
+
+            public static MapConfigResponse FromJson(string json)
+            {
+               return JsonUtility.FromJson<MapConfigResponse>(json);
+            }
+        }
+
+
+
+
+        [Serializable]
+        public struct WorldmapConfig
+        {
+            public Vector2 shapeScale;
+            public Vector2Int gridSize;
+            public Vector2Int chunkSize;
+
+            public WorldmapConfig(Worldmap map)
+            {
+                shapeScale = map.ShapeScale;
+                gridSize = map.gridManager.GridSize;
+                chunkSize = map.gridManager.ChunkSize;
+            }
+
+        }
+
+        [Serializable]
+        public struct NoiseConfig
+        {
+            public NoiseSettings landNoiseSettings;
+            public NoiseSettings rainNoiseSettings;
+            public NoiseSettings tempNoiseSettings;
+
+            public NoiseConfig(NoiseGenerator noiseGenerator)
+            {
+                landNoiseSettings = noiseGenerator.landNoiseSettings;
+                rainNoiseSettings = noiseGenerator.rainNoiseSettings;
+                tempNoiseSettings = noiseGenerator.tempNoiseSettings;
+            }
+        }
+
+        [Serializable]
+        public struct BiomeConfig
+        {
+            public float waterThreshold;
+            public float snowThreshold;
+
+            public List<BiomeRules> biomeRules;
+
+            public BiomeConfig(BiomeGenerator biomeGenerator)
+            {
+                waterThreshold = biomeGenerator.waterThreshold;
+                snowThreshold = biomeGenerator.snowThreshold;
+                biomeRules = biomeGenerator.biomeRules;
+            }
+        }
+
 
         public static string ToJson(this Vector2Int v)
         {
@@ -82,8 +153,6 @@ namespace CaseMaroon.Miscellaneous
 
             return data;
         }
-
-
 
         public static string ToJson(this UnitData unit)
         {

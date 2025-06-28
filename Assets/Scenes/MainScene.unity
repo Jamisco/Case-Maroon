@@ -906,9 +906,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a09a4d22c92bfd43bb233e15d7a2133, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldMapConfig: {fileID: 11400000, guid: 76f0ca21d39c1924f9abbb3025838db7, type: 2}
   gridManager: {fileID: 633136817}
-  biomeConfig: {fileID: 11400000, guid: c5f97a332e7636a4cbaf2b7dbe546d16, type: 2}
+  biomeGenerator: {fileID: 11400000, guid: c5f97a332e7636a4cbaf2b7dbe546d16, type: 2}
   noiseGenerator: {fileID: 633136819}
   ShapeScale: {x: 1.5, y: 1.5}
   baseLayer:
@@ -999,6 +998,7 @@ MonoBehaviour:
     minValue: 0
     maxValue: 1
     offset: {x: 0, y: 0}
+    gridSize: {x: 100, y: 100}
   rainNoiseSettings:
     fractalType: 2
     noiseType: 0
@@ -1010,6 +1010,7 @@ MonoBehaviour:
     minValue: 0
     maxValue: 1
     offset: {x: 0, y: 0}
+    gridSize: {x: 100, y: 100}
   tempNoiseSettings:
     fractalType: 2
     noiseType: 3
@@ -1021,6 +1022,7 @@ MonoBehaviour:
     minValue: 0
     maxValue: 1
     offset: {x: 0, y: 0}
+    gridSize: {x: 100, y: 100}
   NoiseModified: 1
   printAverage: 0
 --- !u!1 &1008166964

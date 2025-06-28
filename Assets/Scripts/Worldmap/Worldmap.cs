@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static CaseMaroon.Miscellaneous.JsonHelper;
 using static CaseMaroon.WorldMap.BiomeData;
 
 namespace CaseMaroon.WorldMap
@@ -14,10 +15,9 @@ namespace CaseMaroon.WorldMap
         public event WorldGenerated OnWorldGenerated;
 
 
-        public WorldMapConfig worldMapConfig;
         // create grid generated event
         public GridManager gridManager;
-        public BiomeConfig biomeConfig;
+        public BiomeGenerator biomeGenerator;
         public NoiseGenerator noiseGenerator;
 
         [SerializeField]
@@ -62,7 +62,7 @@ namespace CaseMaroon.WorldMap
             {
                 Init();
 
-                BackendMessenger.Instance.UploadMapData(worldMapConfig);
+                BackendTester.Instance.UploadMapConfig(this);
 
                 //GenerateGrid();
             }
@@ -80,6 +80,13 @@ namespace CaseMaroon.WorldMap
             }
 
             ValidateLayerScale();
+        }
+        public void Update()
+        {
+            if (noiseGenerator.NoiseModified && instantUpdate)
+            {
+                GenerateGrid();
+            }
         }
 
         private void ValidateLayerScale()
@@ -100,13 +107,28 @@ namespace CaseMaroon.WorldMap
             noiseGenerator.ComputeNoises(gridManager.GridSize, false);
         }
 
-        public void Update()
+        public void GenerateGrid_Validate()
         {
-            if (noiseGenerator.NoiseModified && instantUpdate)
-            {
-                GenerateGrid();
-            }
+            //BackendTester.Instance.UploadMapConfig(this);
+            //// if upload successful
+            //if (ComputeNoise_Validate())
+            //{
+            //    DrawGrid();
+            //}
+            //else
+            //{
+            //    Debug.LogError("Noise Validation failed");
+            //    return;
+            //}
+
+            // tell server to compute its noise and send hash
+
+            // check if client and server noise hashes match
+
+            // if match call Gene
+
         }
+
         public void GenerateGrid()
         {
             if (generating)
@@ -118,6 +140,11 @@ namespace CaseMaroon.WorldMap
 
             ComputeNoise();
 
+            DrawGrid();
+        }   
+
+        private void DrawGrid()
+        {
             gridManager.Initialize();
             gridManager.CreateLayer(baseLayer, true);
             gridManager.CreateLayer(snowLayer, false);
@@ -137,12 +164,11 @@ namespace CaseMaroon.WorldMap
                     float temp = noiseGenerator.GetTempNoise(x, y);
                     float rain = noiseGenerator.GetRainNoise(x, y);
 
-                    vData = biomeConfig.GetLandVisualData(land, temp, rain);
-                    snowData = biomeConfig.GetSnowVisualData(temp);
+                    vData = biomeGenerator.GetLandVisualData(land, temp, rain);
+                    snowData = biomeGenerator.GetSnowVisualData(temp);
 
                     gridManager.InsertVisualData(pos, vData);
                     gridManager.InsertVisualData(pos, snowData, snowLayer.LayerId);
-
                 }
             }
 
@@ -154,7 +180,7 @@ namespace CaseMaroon.WorldMap
 
             WorldGenerated = true;
             OnWorldGenerated?.Invoke(this);
-        }   
+        }
 
         //private void NoiseModified()
         //{
@@ -267,7 +293,7 @@ namespace CaseMaroon.WorldMap
             {
                 if (gridManager.ContainsGridPosition(p))
                 {
-                    gridManager.InsertVisualData(p, biomeConfig.HighlightVisualData, highlightLayer.LayerId);
+                    gridManager.InsertVisualData(p, biomeGenerator.HighlightVisualData, highlightLayer.LayerId);
                 }
             }
 
@@ -321,7 +347,7 @@ namespace CaseMaroon.WorldMap
             float rain = noiseGenerator.GetRainNoise(pos.x, pos.y);
             float land = noiseGenerator.GetLandNoise(pos.x, pos.y);
 
-            return biomeConfig.GetMatchingRule(land, temp, rain);
+            return biomeGenerator.GetMatchingBiome(land, temp, rain);
         }
 
         public ShapeVisualData GetVisualData(Vector2Int pos)
@@ -330,7 +356,7 @@ namespace CaseMaroon.WorldMap
             float temp = noiseGenerator.GetTempNoise(pos.x, pos.y);
             float rain = noiseGenerator.GetRainNoise(pos.x, pos.y);
 
-            ShapeVisualData vData = biomeConfig.GetLandVisualData(land, temp, rain);
+            ShapeVisualData vData = biomeGenerator.GetLandVisualData(land, temp, rain);
 
             return vData;
         }
@@ -340,24 +366,16 @@ namespace CaseMaroon.WorldMap
             float temp = noiseGenerator.GetTempNoise(pos.x, pos.y);
             float rain = noiseGenerator.GetRainNoise(pos.x, pos.y);
 
-            ShapeVisualData vData = biomeConfig.GetLandVisualData(land, temp, rain);
+            ShapeVisualData vData = biomeGenerator.GetLandVisualData(land, temp, rain);
 
             LandVisualData lv = (LandVisualData)vData;
 
             return lv.NewMatWithProps();
         }
 
-        public BiomeStats GetBiomeStats(Vector2Int pos)
+        public BiomeData GetBiomeStats(Vector2Int pos)
         {
-            BiomeData bd = GetBiomeData(pos);
-            BiomeStats b = new BiomeStats();
-
-            b.temp = noiseGenerator.GetTempNoise(pos.x, pos.y);
-            b.rain = noiseGenerator.GetRainNoise(pos.x, pos.y);
-            b.moveCost = bd.movementCost;
-            b.biomeType = bd.biomeType;
-
-            return b;
+            return GetBiomeData(pos);
         }
         public void Clear()
         {
@@ -400,15 +418,6 @@ namespace CaseMaroon.WorldMap
                 exampleScript.Clear();
             }
 
-            if (GUILayout.Button("Update Config from Map"))
-            {
-                exampleScript.worldMapConfig.UpdateConfigFromMap(exampleScript);
-            }
-
-            if (GUILayout.Button("Update Map from Config"))
-            {
-                exampleScript.worldMapConfig.UpdateMapFromConfig(exampleScript);
-            }
         }
     }
 

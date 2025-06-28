@@ -2,6 +2,7 @@
 using CaseMaroon.WorldMapUI;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using static CaseMaroon.Miscellaneous.JsonHelper;
 
 namespace CaseMaroon.WorldMap
 {
@@ -52,7 +53,7 @@ namespace CaseMaroon.WorldMap
             }
         }
 
-        public void UploadMapData(WorldMapConfig worldConfig)
+        public void UploadMapData(Worldmap worldMap)
         {
             if (Application.platform == RuntimePlatform.WebGLPlayer)
             {
@@ -61,7 +62,19 @@ namespace CaseMaroon.WorldMap
             }
             else if (Application.platform == RuntimePlatform.WindowsEditor)
             {
-                BackendTester.Instance.UploadMapData(worldConfig);
+                BackendTester.Instance.UploadMapConfig(worldMap);
+            }
+        }
+
+        public void UploadMapConfig(MapConfig mapConfig)
+        {
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                
             }
         }
     }

@@ -17,7 +17,7 @@ namespace CaseMaroon.WorldMap
         [SerializeField]
         private MovementType movementType = MovementType.Feet;
 
-        public BiomeConfig biomeConfig;
+        public BiomeGenerator biomeConfig;
         public GameObject cellPrefab; // assign an empty Plane prefab scaled to your desired size
         public Material LandMat;
         public Material defaultMat;
@@ -67,7 +67,7 @@ namespace CaseMaroon.WorldMap
                         float temp = (float)Math.Round((float)x / (gridSize - 1), 1);
                         float rain = (float)Math.Round((float)y / (gridSize - 1), 1);
 
-                        BiomeData rule = biomeConfig.GetMatchingRule(temp, rain);
+                        BiomeData rule = biomeConfig.GetMatchingBiome(temp, rain);
 
                         int movementCost;
 

@@ -106,12 +106,9 @@ namespace CaseMaroon.WorldMapUI
 
             BiomeData biomeData = Worldmap.Instance.GetBiomeData(gridPos);
 
-            BiomeStats biomeStats = Worldmap.Instance.GetBiomeStats(gridPos);
-
-
             StatItemCard statCard = WorldUI.Instance.uiManager.starItemCard;
 
-            List<StatItemCard> stats = biomeStats.CreateList(statCard);
+            List<StatItemCard> stats = biomeData.CreateList(statCard);
 
             foreach (StatItemCard stat in stats)
             {
