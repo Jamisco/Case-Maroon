@@ -15,3 +15,5 @@ MonoBehaviour:
   unitInfo_1: {fileID: 614704580721562904, guid: 1d8a5fee106890a4d963a575eaac85bf, type: 3}
   unitInfo_2: {fileID: 5351068294553636264, guid: b0e2a338d50aa9444b17051861426d81, type: 3}
   starItemCard: {fileID: 5078701535376877615, guid: 6611977d0dba75e408bba7974ba4578c, type: 3}
+  buildingItemCard: {fileID: 1809388443588880403, guid: ee0a13477d705eb46bdfa3b4b1666f5c, type: 3}
+  unitItemCard: {fileID: 1487862086294129379, guid: 603ee0bf20ed05c49b08048718fa974c, type: 3}

@@ -63,5 +63,10 @@ namespace CaseMaroon.Units
             return unitData;
 
         }
+
+        public Sprite GetUnitImage(UnitType ut)
+        {
+            return unitSettings.Where(x => x.unitType == ut).FirstOrDefault().Images[0];
+        }
     }
 }

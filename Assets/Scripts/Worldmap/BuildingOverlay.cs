@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static CaseMaroon.Miscellaneous.GlobalData;
+using static CaseMaroon.WorldMapUI.InputContext;
 
 namespace CaseMaroon.WorldMap
 {
@@ -67,14 +68,18 @@ namespace CaseMaroon.WorldMap
             //}
         }
 
-        private void OnInputStateChanged(InputState newState, BuildingType buildType)
+        private void OnInputStateChanged(InputContext context)
         {
-            if (newState == InputState.PlacingBuilding)
+            if (context.State == InputState.PlacingBuilding)
             {
                 hoverBuilding = true;
             }
+            else
+            {
+                return;
+            }
 
-            switch (buildType)
+            switch (context.BuildType)
             {
                 case BuildingType.Headquarters:
                     selectedSprite = HeadquartersSprite;
@@ -92,7 +97,7 @@ namespace CaseMaroon.WorldMap
                     break;
             }
 
-            selectedType = buildType;
+            selectedType = (BuildingType)context.BuildType;
         }
         private void OnGridPositionSelected(Vector2Int gridPos)
         {

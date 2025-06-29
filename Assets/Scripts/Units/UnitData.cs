@@ -7,9 +7,9 @@ namespace CaseMaroon.Units
         Infantry,
         Armored,
         Artillery,
-        Aircraft,
-        Naval,
-        Structure,
+        //Aircraft,
+        //Naval,
+        //Structure,
     }
 
     public enum MovementType

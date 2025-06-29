@@ -230,8 +230,6 @@ namespace CaseMaroon.WorldMap
             {
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    Debug.Log("Map data uploaded successfully");
-
                     MapConfigResponse response = MapConfigResponse.FromJson(request.downloadHandler.text);
 
                     Worldmap.Instance.ComputeNoise();
@@ -249,8 +247,6 @@ namespace CaseMaroon.WorldMap
                     if (percentDifference <= tolerancePercent)
                     {
                         string grid = worldMap.gridManager.GridSize.x + "  x " + worldMap.gridManager.GridSize.y;
-
-                        Debug.Log($"Hash match! Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}% "  + grid);
 
                         Worldmap.Instance.GenerateGrid();
                     }

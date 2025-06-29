@@ -7,22 +7,34 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static CaseMaroon.Miscellaneous.GlobalData;
+using static CaseMaroon.WorldMapUI.InputContext;
 
 namespace CaseMaroon.WorldMapUI
 {
     public delegate void UnitSelected(UnitInfoUI_1 unit);
     public delegate void GridPositionSelected(Vector2Int gridPos);
     public delegate void GridRightClicked(Vector2Int gridPos);
-    public delegate void InputStateChanged(InputState newState, BuildingType buildType);
+    public delegate void InputStateChanged(InputContext inputContext);
     public delegate void BuildingPlaced(Vector2Int gridPos);
-    public enum InputState
+    public delegate void UnitPlaced(Vector2Int gridPos, UnitType unitType);
+
+    public struct InputContext
     {
-        None,
-        PlacingBuilding,
-        SelectingUnit,
-        MovingUnit,
-        CreatingUnit
+        public enum InputState
+        {
+            None,
+            PlacingBuilding,
+            PlacingUnit,
+            SelectingUnit,
+            MovingUnit,
+            CreatingUnit
+        }
+
+        public InputState State;
+        public BuildingType? BuildType;
+        public UnitType? UnitType;
     }
+
     public class WorldUI : MonoBehaviour
     {
         // we can either choose to further optimze the logistics system or continue on to the next step,
@@ -50,65 +62,7 @@ namespace CaseMaroon.WorldMapUI
 
         public bool MouseDragged => draggedDistance > maxDragDistance;
 
-        private void CheckMouse()
-        {
-            if(GlobalData.IsMouseOverScreenUI)
-            {
-                return;
-            }
 
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-
-            // LEFT MOUSE HANDLING
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                dragOrigin = mousePos;
-                isDragging = true;
-            }
-
-            if (isDragging && Mouse.current.leftButton.isPressed)
-            {
-                draggedDistance = Vector2.Distance(dragOrigin, mousePos);
-            }
-
-            Vector2Int clickedPos = Vector2Int.left;
-
-            try
-            {
-                clickedPos = worldMap.GetGridPosition(mousePos);
-            }
-            catch (System.Exception)
-            {
-
-            }
-            
-            if (isDragging && Mouse.current.leftButton.wasReleasedThisFrame)
-            {
-                if (!MouseDragged)
-                {
-                    if(worldMap.gridManager
-                        .ContainsGridPosition(clickedPos) )
-                    {
-                        GridPositionSelected(clickedPos);
-                    }
-                }
-
-                ResetDrag();
-            }
-
-            // RIGHT MOUSE HANDLING
-            if (Mouse.current.rightButton.wasPressedThisFrame)
-            {
-                OnGridRightClicked?.Invoke(clickedPos);
-                unitHandler.RemoveUnit(clickedPos);
-            }
-        }
-        private void ResetDrag()
-        {
-            draggedDistance = 0f;
-            isDragging = false;
-            dragOrigin = Vector2.left;
-        }
 
         //private void ResetDrag()
         //{
@@ -147,15 +101,6 @@ namespace CaseMaroon.WorldMapUI
 
             worldMap.OnWorldGenerated += WorldMap_OnWorldGenerated;
         }
-        private void WorldMap_OnWorldGenerated(Worldmap map)
-        {
-            //if(gridCollider == null)
-            //{
-            //    gridCollider = this.AddComponent<PolygonCollider2D>();
-            //}
-
-            //gridCollider.points = worldMap.polygonCollider.points;
-        }
 
         private void Start()
         {
@@ -170,8 +115,67 @@ namespace CaseMaroon.WorldMapUI
             {
                 CheckMouse();
             }
+        }
+        private void CheckMouse()
+        {
+            if (GlobalData.IsMouseOverScreenUI)
+            {
+                return;
+            }
 
-        }    
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+
+            // LEFT MOUSE HANDLING
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                dragOrigin = mousePos;
+                isDragging = true;
+            }
+
+            if (isDragging && Mouse.current.leftButton.isPressed)
+            {
+                draggedDistance = Vector2.Distance(dragOrigin, mousePos);
+            }
+
+            Vector2Int clickedPos = Vector2Int.left;
+
+            try
+            {
+                clickedPos = worldMap.GetGridPosition(mousePos);
+            }
+            catch (System.Exception)
+            {
+
+            }
+
+            if (isDragging && Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                if (!MouseDragged)
+                {
+                    if (worldMap.gridManager
+                        .ContainsGridPosition(clickedPos))
+                    {
+                        GridPositionSelected(clickedPos);
+                    }
+                }
+
+                ResetDrag();
+            }
+
+            // RIGHT MOUSE HANDLING
+            if (Mouse.current.rightButton.wasPressedThisFrame)
+            {
+                OnGridRightClicked?.Invoke(clickedPos);
+                unitHandler.RemoveUnit(clickedPos);
+            }
+        }
+        private void ResetDrag()
+        {
+            draggedDistance = 0f;
+            isDragging = false;
+            dragOrigin = Vector2.left;
+        }
+
         private void ValidateUnitParentObj()
         {
             // remember that the scale of this object must be .01 for the unit ui to fit
@@ -198,6 +202,15 @@ namespace CaseMaroon.WorldMapUI
             OnGridPositionSelected?.Invoke(gridPos);
 
             //BackendMessenger.Instance.SendGridPos(gridPos);
+        }
+        private void WorldMap_OnWorldGenerated(Worldmap map)
+        {
+            //if(gridCollider == null)
+            //{
+            //    gridCollider = this.AddComponent<PolygonCollider2D>();
+            //}
+
+            //gridCollider.points = worldMap.polygonCollider.points;
         }
 
         private UnitInfoUI_1 SelectedUnit { get; set; }
@@ -229,7 +242,6 @@ namespace CaseMaroon.WorldMapUI
         }
 
         public Vector2Int prevBuildPos = Vector2Int.left;
-
         protected virtual void OnUnitSelected(UnitInfoUI_1 unit)
         {
             if (!unit.Equals(SelectedUnit))
@@ -253,7 +265,6 @@ namespace CaseMaroon.WorldMapUI
                 DeselectCurrentUnit();
             }
         }
-
         public bool GetUnits(Vector2Int gridPos, out List<UnitInfoUI_1> unit)
         {
             return unitHandler.GetUnit(gridPos, out unit);
