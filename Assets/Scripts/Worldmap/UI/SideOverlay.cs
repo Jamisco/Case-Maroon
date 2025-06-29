@@ -73,7 +73,7 @@ namespace CaseMaroon.WorldMapUI
             {
                 BuildingItemCard card = Instantiate(buildingPrefab, cardParent.transform);
 
-                card.buildType = type;
+                card.SetBuilding(type);
                 buildingCards.Add(card);
             }
         }

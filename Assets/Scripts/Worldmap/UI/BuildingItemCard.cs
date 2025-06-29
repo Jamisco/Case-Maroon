@@ -1,4 +1,6 @@
-﻿using CaseMaroon.WorldMapUI;
+﻿using CaseMaroon.Units;
+using CaseMaroon.WorldMap;
+using CaseMaroon.WorldMapUI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,6 +17,15 @@ namespace CaseMaroon.WorldMapUI
         public TextMeshProUGUI textObject;
         public BuildingType buildType;
 
+        public void SetBuilding(BuildingType type)
+        {
+            Sprite img = GameAssets.Instance.GetBuildingImage(type);
+            string name = type.ToString();
+            imageObject.sprite = img;
+            textObject.text = name;
+            buildType = type;
+        }
+
         public void OnPointerClick(PointerEventData eventData)
         {
             InputContext context = new InputContext();
@@ -22,7 +33,7 @@ namespace CaseMaroon.WorldMapUI
             context.BuildType = buildType;
             context.State = InputState.PlacingBuilding;
 
-            WorldUI.Instance.OnInputStateChanged?.Invoke(context);
+            WorldUI.Instance.InvokeInputState(context);
         }
 
         public void OnPointerEnter(PointerEventData eventData)

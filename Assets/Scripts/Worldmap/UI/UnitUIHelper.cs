@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CaseMaroon.WorldMapUI
 {
-    public class UnitUIHandler
+    public class UnitUIHelper
     {
         public Dictionary<Vector2Int, List<UnitInfoUI_1>> battleUnits = new();
 
@@ -15,7 +15,7 @@ namespace CaseMaroon.WorldMapUI
 
         WorldUI wu;
         GridManager grid;
-        public UnitUIHandler(GameObject unitParent)
+        public UnitUIHelper(GameObject unitParent)
         {
             wu = WorldUI.Instance;
             grid = Worldmap.Instance.gridManager;

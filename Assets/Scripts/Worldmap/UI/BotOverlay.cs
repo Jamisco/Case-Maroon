@@ -67,7 +67,7 @@ namespace CaseMaroon.WorldMapUI
         {
             ClearChilds();
 
-            WorldUI.Instance.OnGridPositionSelected += GridPositionSelected;
+            WorldUI.Instance.GridPositionSelected += GridPositionSelected;
         }
 
         public void AddUnit(UnitInfoUI_1 unit)

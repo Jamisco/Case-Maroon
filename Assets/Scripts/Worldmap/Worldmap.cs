@@ -249,9 +249,12 @@ namespace CaseMaroon.WorldMap
             if(gridManager.ContainsWorldPosition(mousePos))
             {
                 gridPos = gridManager.WorldToGridPosition(mousePos);
-                worldPos = gridManager.GridToWorldPostion(gridPos);
 
-                return true;
+                if(gridPos != Vector2Int.left)
+                {
+                    worldPos = gridManager.GridToWorldPostion(gridPos);
+                    return true;
+                }
             }
 
             gridPos = Vector2Int.left;

@@ -1,4 +1,5 @@
-﻿using CaseMaroon.Miscellaneous;
+﻿using Assets.Scripts.Units;
+using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using System.Collections.Generic;
@@ -11,11 +12,11 @@ using static CaseMaroon.WorldMapUI.InputContext;
 
 namespace CaseMaroon.WorldMapUI
 {
-    public delegate void UnitSelected(UnitInfoUI_1 unit);
-    public delegate void GridPositionSelected(Vector2Int gridPos);
-    public delegate void GridRightClicked(Vector2Int gridPos);
-    public delegate void InputStateChanged(InputContext inputContext);
-    public delegate void BuildingPlaced(Vector2Int gridPos);
+    public delegate void UnitSelectedHandler(UnitInfoUI_1 unit);
+    public delegate void GridPositionSelectedHandler(Vector2Int gridPos);
+    public delegate void GridRightClickedHandler(Vector2Int gridPos);
+    public delegate void InputStateChangedHandler(InputContext inputContext);
+    public delegate void BuildingPlacedHandler(Vector2Int gridPos);
     public delegate void UnitPlaced(Vector2Int gridPos, UnitType unitType);
 
     public struct InputContext
@@ -37,20 +38,38 @@ namespace CaseMaroon.WorldMapUI
 
     public class WorldUI : MonoBehaviour
     {
-        // we can either choose to further optimze the logistics system or continue on to the next step,
-        // as it currently stands the logistics system is passable
-        // I recommend we continue
         public static WorldUI Instance { get; private set; }
 
-        public UnitUIHandler unitHandler;
-        private InputState worldInputState;
+        [SerializeField]
+        private GameAssets GameAssets;
 
-        public InputStateChanged OnInputStateChanged;
-        public GridRightClicked OnGridRightClicked;
+        public Worldmap worldMap;
 
-        public InputState WorldInputState
+        public UnitInfoUI_1 prefab;
+
+        public UIManager uiManager;
+
+        public Canvas UnitCanvas;
+
+        private PolygonCollider2D gridCollider;
+        public GameObject AllUnitsParent;
+
+        public UnitUIHelper unitUIHelper;
+
+        public event InputStateChangedHandler InputStateChanged;
+        public event GridRightClickedHandler GridRightClicked;
+        public event UnitSelectedHandler UnitSelected;
+        public event GridPositionSelectedHandler GridPositionSelected;
+        public event BuildingPlacedHandler BuildingPlaced;
+
+        private InputContext worldInputContext;
+        public InputContext WorldInputContext
         {
-            get => worldInputState;
+            get => worldInputContext;
+            private set
+            {
+                worldInputContext = value;
+            }
         }
 
         [SerializeField]
@@ -61,29 +80,6 @@ namespace CaseMaroon.WorldMapUI
         private bool isDragging = false;
 
         public bool MouseDragged => draggedDistance > maxDragDistance;
-
-
-
-        //private void ResetDrag()
-        //{
-        //    dragOrigin = Vector2.left;
-        //    DraggedDistance = 0;
-        //}
-
-        public Worldmap worldMap;
-        public UnitCreator unitCreator;
-        public UnitInfoUI_1 prefab;
-
-        public UIManager uiManager;
-
-        public Canvas UnitCanvas;
-
-        private PolygonCollider2D gridCollider;
-        public GameObject AllUnitsParent;
-
-        public event UnitSelected UnitSelected;
-        public event GridPositionSelected OnGridPositionSelected;
-        public event BuildingPlaced OnBuildingPlaced;
 
         private void Awake()
         {
@@ -96,17 +92,28 @@ namespace CaseMaroon.WorldMapUI
             Instance = this;
             DontDestroyOnLoad(gameObject); // Optional, if persistent
 
-            worldMap = FindAnyObjectByType<Worldmap>();
-            unitCreator = FindAnyObjectByType<UnitCreator>();
+            worldMap = Worldmap.Instance;
 
-            worldMap.OnWorldGenerated += WorldMap_OnWorldGenerated;
+            worldMap.OnWorldGenerated += OnWorldGenerated;
+            InputStateChanged += OnInputStateChanged;
+
+            InputStateChanged?.Invoke(new InputContext
+            {
+                State = InputContext.InputState.None,
+                BuildType = null,
+                UnitType = null
+            });
+        }
+
+        private void OnInputStateChanged(InputContext inputContext)
+        {
+            WorldInputContext = inputContext;
         }
 
         private void Start()
         {
             ValidateUnitParentObj();
-
-            unitHandler = new UnitUIHandler(AllUnitsParent);
+            unitUIHelper = new UnitUIHelper(AllUnitsParent);
         }
 
         private void Update()
@@ -155,7 +162,7 @@ namespace CaseMaroon.WorldMapUI
                     if (worldMap.gridManager
                         .ContainsGridPosition(clickedPos))
                     {
-                        GridPositionSelected(clickedPos);
+                        OnGridPositionSelected(clickedPos);
                     }
                 }
 
@@ -165,8 +172,8 @@ namespace CaseMaroon.WorldMapUI
             // RIGHT MOUSE HANDLING
             if (Mouse.current.rightButton.wasPressedThisFrame)
             {
-                OnGridRightClicked?.Invoke(clickedPos);
-                unitHandler.RemoveUnit(clickedPos);
+                GridRightClicked?.Invoke(clickedPos);
+                unitUIHelper.RemoveUnit(clickedPos);
             }
         }
         private void ResetDrag()
@@ -174,6 +181,11 @@ namespace CaseMaroon.WorldMapUI
             draggedDistance = 0f;
             isDragging = false;
             dragOrigin = Vector2.left;
+        }
+
+        public void InvokeInputState(InputContext context)
+        {
+            InputStateChanged?.Invoke(context);
         }
 
         private void ValidateUnitParentObj()
@@ -189,7 +201,7 @@ namespace CaseMaroon.WorldMapUI
                 AllUnitsParent.transform.localScale = new Vector3(sc, sc, sc);
             }
         }
-        protected virtual void GridPositionSelected(Vector2Int gridPos)
+        protected virtual void OnGridPositionSelected(Vector2Int gridPos)
         {
             // move the unit to the new position
             // this is used to get the center of the shape at the grid position, 
@@ -199,11 +211,11 @@ namespace CaseMaroon.WorldMapUI
 
             CheckUnit(gridPos);
 
-            OnGridPositionSelected?.Invoke(gridPos);
+            GridPositionSelected?.Invoke(gridPos);
 
             //BackendMessenger.Instance.SendGridPos(gridPos);
         }
-        private void WorldMap_OnWorldGenerated(Worldmap map)
+        private void OnWorldGenerated(Worldmap map)
         {
             //if(gridCollider == null)
             //{
@@ -233,7 +245,7 @@ namespace CaseMaroon.WorldMapUI
             else
             {
                 // if there is a unit on that position, select it
-                if (unitHandler.GetUnit(gridPos, 
+                if (unitUIHelper.GetUnit(gridPos, 
                                     out List<UnitInfoUI_1> unit))
                 {
                     OnUnitSelected(unit.Last());
@@ -267,7 +279,7 @@ namespace CaseMaroon.WorldMapUI
         }
         public bool GetUnits(Vector2Int gridPos, out List<UnitInfoUI_1> unit)
         {
-            return unitHandler.GetUnit(gridPos, out unit);
+            return unitUIHelper.GetUnit(gridPos, out unit);
         }
 
         public void MoveSelectedUnit(UnitInfoUI_1 unitInfo, Vector2Int gridPos)
@@ -287,7 +299,7 @@ namespace CaseMaroon.WorldMapUI
 
             List<Vector2Int> path = GetFastestPath(unitInfo.data, unitInfo.gridPosition, gridPos);
 
-            unitHandler.MoveToPosition_Animate(unitInfo, path);
+            unitUIHelper.MoveToPosition_Animate(unitInfo, path);
             DeselectCurrentUnit();
 
             Canvas.ForceUpdateCanvases();
@@ -420,26 +432,28 @@ namespace CaseMaroon.WorldMapUI
             
         public List<Vector2Int> GetLogisticsPath(Vector2Int start, Vector2Int dest)
         {
-            UnitData supply = unitCreator.CreateUnit(UnitType.Armored);
+            Sprite img = GameAssets.Instance.GetUnitImage(UnitType.Armored);
+
+            UnitData supply = DefaultUnitData.CreateDefaultUnit<Tank>(img);
 
             return GetFastestPath(supply, start, dest);
         }
 
         public void SpawnUnit(Vector2Int gridPos, UnitData data)
         {
-            unitHandler.SpawnUnit(gridPos, data);
+            unitUIHelper.SpawnUnit(gridPos, data);
         }
         public void SpawnTestUnit(Vector2Int gridPos)
         {
             ValidateUnitParentObj();
 
-            UnitData newUnit = unitCreator.CreateUnit(UnitType.Infantry);
+            UnitData newUnit = GameAssets.CreateUnit(UnitType.Infantry);
 
-            unitHandler.SpawnUnit(gridPos, newUnit);
+            unitUIHelper.SpawnUnit(gridPos, newUnit);
         }
         public Dictionary<Vector2Int, List<UnitInfoUI_1>> GetAllUnits()
         {
-            return unitHandler.battleUnits;
+            return unitUIHelper.battleUnits;
         }
         public void Clear()
         {
@@ -449,7 +463,7 @@ namespace CaseMaroon.WorldMapUI
 #else
             DestroyImmediate(AllUnitsParent);
 #endif
-            unitHandler.Clear();
+            unitUIHelper.Clear();
         }
 
 

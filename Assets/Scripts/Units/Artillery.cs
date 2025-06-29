@@ -7,11 +7,13 @@ namespace CaseMaroon.Units
     {
         public override UnitType UnitType => UnitType.Artillery;
 
-        public Artillery(Sprite image)
+        public static Artillery CreateDefaultUnit(Sprite image)
         {
-            Artillery def = DefaultUnitData.DefaultArtillery;
-            CopyFields(def);
-            Image = image;
+            Artillery art = DefaultUnitData.DefaultArtillery;
+
+            art.Image = image;
+
+            return art;
         }
 
     }

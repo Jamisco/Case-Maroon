@@ -68,7 +68,7 @@ namespace Assets.Scripts.Units
             MovementType = MovementType.Tracked,
             MovementPoints = 200
         };
-        public static Artillery DefaultArtillery => new Artillery(null)
+        public static Artillery DefaultArtillery => new Artillery()
         {
             UnitName = "Artillery",
             UnitId = 333333,
@@ -124,6 +124,21 @@ namespace Assets.Scripts.Units
             }
 
             return null;
+        }
+
+        public static UnitData CreateDefaultUnit(UnitType unitType, Sprite image)
+        {
+            switch (unitType)
+            {
+                case UnitType.Infantry:
+                    return CreateDefaultUnit<Infantry>(image);
+                case UnitType.Armored:
+                    return CreateDefaultUnit<Tank>(image);
+                case UnitType.Artillery:
+                    return CreateDefaultUnit<Artillery>(image);
+                default:
+                    throw new ArgumentException($"Unsupported unit type: {unitType}");
+            }
         }
     }
 }

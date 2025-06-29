@@ -10,16 +10,9 @@ namespace CaseMaroon.WorldMap
 {
     public class BuildingOverlay : MonoBehaviour
     {
+        public static BuildingOverlay Instance { get; private set; }
+
         public float spriteScale = .5f;
-        public Sprite HeadquartersSprite;
-        public Sprite SupplyDepotSprite;
-
-        public Sprite InfantrySprite;
-        public Sprite TankSprite;
-
-        private SpriteRenderer hoverRen;
-        private Sprite selectedSprite;
-        private BuildingType selectedType;
 
         private Worldmap worldmap;
 
@@ -29,17 +22,26 @@ namespace CaseMaroon.WorldMap
 
         public Dictionary<Vector2Int, BuildingType> buildPositions = new Dictionary<Vector2Int, BuildingType>();
 
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject); // Prevent duplicates
+                return;
+            }
+
+            Instance = this;
+        }
+
         private void Start()
         {
             worldmap = Worldmap.Instance;
 
-            WorldUI.Instance.OnInputStateChanged += OnInputStateChanged;
-            WorldUI.Instance.OnGridPositionSelected += OnGridPositionSelected;
-            WorldUI.Instance.OnBuildingPlaced += OnBuildingPlaced;
-            WorldUI.Instance.OnGridRightClicked += OnGridRightClicked;
+            WorldUI.Instance.GridPositionSelected += OnGridPositionSelected;
+            WorldUI.Instance.BuildingPlaced += OnBuildingPlaced;
+            WorldUI.Instance.GridRightClicked += OnGridRightClicked;
 
-
-            CreateHoverRen();
         }
         private void OnBuildingPlaced(Vector2Int gridPos)
         {
@@ -48,114 +50,29 @@ namespace CaseMaroon.WorldMap
 
         private void Update()
         {
-            HoverBuildingOnMouse();
         }
-
         public void OnGridRightClicked(Vector2Int gridPos)
         {
-            // cancal building mod
-            if (hoverBuilding)
-            {
-                hoverBuilding = false;
-                selectedSprite = null;
-                hoverRen.enabled = false;
-                return;
-            }
-
-            //if (gridPos == buildPos)
-            //{
-            //    // here we can remove the building if we like
-            //}
-        }
-
-        private void OnInputStateChanged(InputContext context)
-        {
-            if (context.State == InputState.PlacingBuilding)
-            {
-                hoverBuilding = true;
-            }
-            else
-            {
-                return;
-            }
-
-            switch (context.BuildType)
-            {
-                case BuildingType.Headquarters:
-                    selectedSprite = HeadquartersSprite;
-                    break;
-                case BuildingType.SupplyDepot:
-                    selectedSprite = SupplyDepotSprite;
-                    break;
-                case BuildingType.Infantry:
-                    selectedSprite = InfantrySprite;
-                    break;
-                case BuildingType.Tank:
-                    selectedSprite = TankSprite;
-                    break;
-                default:
-                    break;
-            }
-
-            selectedType = (BuildingType)context.BuildType;
+            // we can remove the building here
         }
         private void OnGridPositionSelected(Vector2Int gridPos)
         {
-            if(hoverBuilding)
+            InputContext cur = WorldUI.Instance.WorldInputContext;
+
+            if (cur.State == InputState.PlacingBuilding)
             {
-                hoverBuilding = false;
-                hoverRen.enabled = false;
+                PlaceBuilding((BuildingType)cur.BuildType, gridPos);
 
-                PlaceBuilding(gridPos);
-
-                buildPositions[gridPos] = selectedType;
-                return;
-            }
-
-            if(buildPositions.ContainsKey(gridPos))
-            {
-                BuildingType buildType = buildPositions[gridPos];
-                Vector2Int buildPos = gridPos;
-
-                // run logistics only for building
-                if (buildType == BuildingType.Headquarters || buildType == BuildingType.SupplyDepot)
+                InputContext context = new InputContext
                 {
-                    //Vector2Int end = gridPos + new Vector2Int(5, 5);
-                    //logistics.RunSupplyLink(buildPos, end);
-                    logistics.SupplyMapUnits(buildPos);
-                }
+                    State = InputState.None,
+                };
 
-                return;
+                WorldUI.Instance.InvokeInputState(context);
             }
         }
-
-        private void CreateHoverRen()
+        public void PlaceBuilding(BuildingType buildType, Vector2Int gridPos)
         {
-            if (hoverRen != null)
-            {
-                Destroy(hoverRen.gameObject);
-            }
-
-            hoverRen = new GameObject("HoverBuilding").AddComponent<SpriteRenderer>();
-            hoverRen.transform.SetParent(transform);
-
-            hoverRen.transform.localScale = new Vector3(spriteScale, spriteScale, 1f);
-            hoverRen.color = new Color(1f, 1f, 1f, 0.8f); // semi-transparent
-            hoverRen.transform.localScale = new Vector3(spriteScale, spriteScale, 1f);
-
-            hoverRen.enabled = false;
-        }
-        public void HoverBuildingOnMouse()
-        {
-            if (hoverBuilding == false)
-            {
-                return;
-            }
-
-            Vector3 wp = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            Vector2Int gridPos =
-                worldmap.gridManager.WorldToGridPosition(wp);
-
             if (gridPos == Vector2Int.left)
             {
                 return;
@@ -163,62 +80,14 @@ namespace CaseMaroon.WorldMap
 
             Vector2 worldPos = worldmap.gridManager.GridToWorldPostion(gridPos);
 
-            hoverRen.enabled = true;
-            hoverRen.sprite = selectedSprite;
+            GameObject headquarters = new GameObject("Building");
+            SpriteRenderer renderer = headquarters.AddComponent<SpriteRenderer>();
 
-            hoverRen.transform.position = worldPos;
-        }
-        public void PlaceBuilding(Vector2Int gridPos)
-        {
-            if (HeadquartersSprite == null)
-            {
-                return;
-            }
+            renderer.transform.position = worldPos;
+            renderer.transform.localScale = new Vector3(spriteScale, spriteScale, 1f);
 
-            if (gridPos == Vector2Int.left)
-            {
-                return;
-            }
-
-            Vector2 worldPos = worldmap.gridManager.GridToWorldPostion(gridPos);
-
-            switch (selectedType)
-            {
-                case BuildingType.Headquarters:
-                case BuildingType.SupplyDepot:
-                    GameObject headquarters = new GameObject("Building");
-                    SpriteRenderer renderer = headquarters.AddComponent<SpriteRenderer>();
-
-                    renderer.transform.position = worldPos;
-                    renderer.transform.localScale = new Vector3(spriteScale, spriteScale, 1f);
-
-                    renderer.sprite = selectedSprite;
-
-                    break;
-                case BuildingType.Infantry:
-
-                    UnitData inf = WorldUI.Instance.unitCreator
-                                        .CreateUnit(UnitType.Infantry);
-
-                    BackendTester.Instance
-                        .SpawnUnit(gridPos, inf);
-
-                    //WorldUI.Instance.SpanwUnit(gridPos, inf);
-
-                    break;
-                case BuildingType.Tank:
-
-                    UnitData tank = WorldUI.Instance.unitCreator
-                                        .CreateUnit(UnitType.Armored);
-
-                    WorldUI.Instance.SpawnUnit(gridPos, tank);
-
-                    break;
-                default:
-                    break;
-            }
-
-
+            renderer.sprite = GameAssets.Instance
+                                .GetBuildingImage(buildType);
         }
     }
 }

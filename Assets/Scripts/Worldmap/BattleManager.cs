@@ -11,7 +11,7 @@ namespace CaseMaroon.Units
     public class BattleManager : MonoBehaviour
     {
         public Worldmap worldMap;
-        public UnitCreator unitCreator;
+        public GameAssets unitCreator;
         public UnitInfoUI_1 prefab;
 
         public Canvas UnitCanvas;

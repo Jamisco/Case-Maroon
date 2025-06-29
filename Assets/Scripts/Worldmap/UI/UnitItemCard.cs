@@ -1,4 +1,5 @@
 ﻿using CaseMaroon.Units;
+using CaseMaroon.WorldMap;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,7 +17,7 @@ namespace CaseMaroon.WorldMapUI
 
         public void SetUnit(UnitType type)
         {
-            Sprite img = WorldUI.Instance.unitCreator.GetUnitImage(type);
+            Sprite img = GameAssets.Instance.GetUnitImage(type);
 
             string name = type.ToString();
 
@@ -32,7 +33,7 @@ namespace CaseMaroon.WorldMapUI
             context.UnitType = unitType;
             context.State = InputState.PlacingUnit;
 
-            WorldUI.Instance.OnInputStateChanged?.Invoke(context);
+            WorldUI.Instance.InvokeInputState(context);
         }
 
         public void OnPointerEnter(PointerEventData eventData)

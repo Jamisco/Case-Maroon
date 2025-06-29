@@ -107,6 +107,6 @@ namespace CaseMaroon.Miscellaneous
             return combinedMesh;
         }
 
-        public enum BuildingType { Headquarters, SupplyDepot, Infantry, Tank}
+        public enum BuildingType { Headquarters, SupplyDepot}
     }
 }

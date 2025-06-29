@@ -1,7 +1,7 @@
-﻿using CaseMaroon.Units;
+﻿using UnityEngine;
+using CaseMaroon.Units;
 using CaseMaroon.WorldMapUI;
 using System.Collections.Generic;
-using UnityEngine;
 using static CaseMaroon.WorldMap.BiomeGenerator;
 
 namespace CaseMaroon.WorldMap
