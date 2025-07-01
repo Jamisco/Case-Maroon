@@ -30,7 +30,7 @@ namespace CaseMaroon.Miscellaneous
             public Vector2IntWrap gridPosition;
             public int movePoints;
 
-            public UnitDataWrap(UnitData data)
+            public UnitDataWrap(Unit data)
             {
                 unitId = data.UnitId;
                 movePoints = data.MovementPoints;
@@ -42,12 +42,12 @@ namespace CaseMaroon.Miscellaneous
         [Serializable]
         public struct SpawnUnitPayload
         {
-            public Vector2Int position;
+            public Vector2Int gridPosition;
             public UnitDataWrap unit;
 
-            public SpawnUnitPayload(Vector2Int pos, UnitData data)
+            public SpawnUnitPayload(Vector2Int pos, Unit data)
             {
-                position = pos;
+                gridPosition = pos;
                 unit = new UnitDataWrap(data);
             }
         }
@@ -135,6 +135,10 @@ namespace CaseMaroon.Miscellaneous
         {
             return JsonUtility.ToJson(v);
         }
+        public static string ToQuery(this Vector2Int v)
+        {
+            return $"x={v.x}&y={v.y}";
+        }
 
         public static Vector2Int ToVector2Int(this string json)
         {
@@ -154,7 +158,7 @@ namespace CaseMaroon.Miscellaneous
             return data;
         }
 
-        public static string ToJson(this UnitData unit)
+        public static string ToJson(this Unit unit)
         {
             return JsonUtility.ToJson(new UnitDataWrap(unit));
         }

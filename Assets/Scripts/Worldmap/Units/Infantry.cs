@@ -3,7 +3,7 @@
 
 namespace CaseMaroon.Units
 {
-    public class Infantry : UnitData
+    public class Infantry : Unit
     {
         public override UnitType UnitType => UnitType.Infantry;
 

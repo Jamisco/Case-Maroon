@@ -38,8 +38,8 @@ namespace CaseMaroon.Units
             }
         }
 
-        public UnitData data;
-        public void Initiliaze(UnitData data)
+        public Unit data;
+        public void Initiliaze(Unit data)
         {
             this.data = data;
             this.name = data.UnitName;

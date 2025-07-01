@@ -80,7 +80,7 @@ namespace CaseMaroon.WorldMap
 
             InputContext context = new InputContext
             {
-                State = InputState.None,
+                State = InputState.Idle,
             };
 
             WorldUI.Instance.InvokeInputState(context);
@@ -96,28 +96,34 @@ namespace CaseMaroon.WorldMap
 
             if (cur.State == InputState.PlacingBuilding)
             {
-               BuildingOverlay.Instance.PlaceBuilding(
-                   (BuildingType)cur.BuildType, gridPos);
+                //BuildingOverlay.Instance.PlaceBuilding(
+                //    (BuildingType)cur.BuildType, gridPos);
+
+                Building newBuilding = new Building(gridPos, 
+                                (BuildingType) cur.BuildType);
+
+                BackendTester.Instance.SpawnBuilding(newBuilding);
             }
             else if (cur.State == InputState.PlacingUnit)
             {
                 Sprite img = GameAssets.Instance.GetUnitImage   
                     ((UnitType)cur.UnitType);
 
-                UnitData ud = DefaultUnitData.CreateDefaultUnit((UnitType)cur.UnitType, img);
+                Unit ud = DefaultUnitData.CreateDefaultUnit((UnitType)cur.UnitType, img);
 
-                WorldUI.Instance.SpawnUnit(gridPos, ud);
+                BackendTester.Instance.SpawnUnit(gridPos, ud);
             }
 
             IsPreviewing = false;
 
             InputContext context = new InputContext
             {
-                State = InputState.None,
+                State = InputState.Idle,
             };
 
             WorldUI.Instance.InvokeInputState(context);
-        }
 
+            CancelPreview();
+        }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace CaseMaroon.Units
 {
-    public class Tank : UnitData
+    public class Tank : Unit
     {
         public override UnitType UnitType => UnitType.Armored;
 

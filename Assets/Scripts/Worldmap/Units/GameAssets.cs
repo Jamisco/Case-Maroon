@@ -39,9 +39,9 @@ namespace CaseMaroon.WorldMap
         }
 
 
-        public UnitData CreateUnit(UnitType ut)
+        public Unit CreateUnit(UnitType ut)
         {
-            UnitData unitData = null;
+            Unit unitData = null;
             Sprite sprite;
 
             switch (ut)

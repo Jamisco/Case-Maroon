@@ -115,6 +115,8 @@ namespace CaseMaroon.WorldMapUI
                 stat.gameObject.SetActive(true);
                 stat.transform.SetParent(hexStatsParent.transform, false);
             }
+
+            BackendTester.Instance.GetBiome(gridPos);
         }
 
         public void ClearBuildings()

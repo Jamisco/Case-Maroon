@@ -23,7 +23,7 @@ namespace CaseMaroon.WorldMapUI
             this.unitParent = unitParent;
         }
 
-        public void SpawnUnit(Vector2Int gridPos, UnitData data)
+        public void SpawnUnit(Vector2Int gridPos, Unit data)
         {
             Vector3 position = grid.GridToWorldPostion(gridPos);
             position.z += -.1f;

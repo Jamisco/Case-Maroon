@@ -112,7 +112,7 @@ namespace CaseMaroon.WorldMap
                     Debug.Log(nodeBuffer.ToString());
                     nodeBuffer.Clear();
                     // Reset the timer interval
-                    stdoutFlushTimer.Interval = flushInterval; 
+                    stdoutFlushTimer.Interval = flushInterval;
                 }
 
                 stdoutFlushTimer.Stop();
@@ -160,10 +160,21 @@ namespace CaseMaroon.WorldMap
             StartCoroutine(SendGridPositionCoroutine(gridPos));
         }
 
-        public void SpawnUnit(Vector2Int gridPos, UnitData data)
+        public void SpawnUnit(Vector2Int gridPos, Unit data)
         {
             StartCoroutine(SpawnUnit_Post(gridPos, data));
         }
+
+        public void SpawnBuilding(Building building)
+        {
+            StartCoroutine(SpawnBuilding_Post(building));
+        }
+
+        public void GetBiome(Vector2Int gridPos)
+        {
+            StartCoroutine(GetBiome_Get(gridPos));
+        }
+
         public void UploadMapConfig(Worldmap worldMap)
         {
             if (worldMap == null)
@@ -175,49 +186,6 @@ namespace CaseMaroon.WorldMap
             StartCoroutine(GenerateGrid_Post(worldMap));
         }
 
-        private IEnumerator SendPostRequest(string endpoint, string json, System.Action<UnityWebRequest> onComplete)
-        {
-            string url = BASE_URL + endpoint;
-
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-
-            using UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            yield return request.SendWebRequest();
-
-            onComplete?.Invoke(request);
-        }
-
-        private IEnumerator SendGridPositionCoroutine(Vector2Int gridPos)
-        {
-            string json = JsonUtility.ToJson(gridPos);
-
-            yield return SendPostRequest("gridPosition", json, (request) =>
-            {
-                if (request.result == UnityWebRequest.Result.Success)
-                    Debug.Log("Grid position sent to backend");
-                else
-                    Debug.LogError("Error sending grid position: " + request.error);
-            });
-        }
-
-        private IEnumerator SpawnUnit_Post(Vector2Int gridPos, UnitData data)
-        {
-            SpawnUnitPayload payload = new SpawnUnitPayload(gridPos, data);
-
-            string json = JsonUtility.ToJson(payload, true);
-
-            yield return SendPostRequest("spawnunit", json, (request) =>
-            {
-                if (request.result == UnityWebRequest.Result.Success)
-                    WorldUI.Instance.SpawnUnit(gridPos, data);
-                else
-                    Debug.LogError("Error spawning unit: " + request.error);
-            });
-        }
         private IEnumerator GenerateGrid_Post(Worldmap worldMap)
         {
             string url = BASE_URL + "GenerateGrid";
@@ -262,5 +230,106 @@ namespace CaseMaroon.WorldMap
             });
         }
 
+        private IEnumerator SendPostRequest(string endpoint, string json, System.Action<UnityWebRequest> onComplete)
+        {
+            string url = BASE_URL + endpoint;
+
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+
+            using UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            onComplete?.Invoke(request);
+        }
+
+        private IEnumerator SendGetRequest(string endpoint, string queryString, System.Action<UnityWebRequest> onComplete)
+        {
+            string url = BASE_URL + endpoint + "?" + queryString;
+
+            using UnityWebRequest request = UnityWebRequest.Get(url);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            onComplete?.Invoke(request);
+        }
+
+        private IEnumerator SendGridPositionCoroutine(Vector2Int gridPos)
+        {
+            string json = JsonUtility.ToJson(gridPos);
+
+            yield return SendPostRequest("gridPosition", json, (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                    Debug.Log("Grid position sent to backend");
+                else
+                    Debug.LogError("Error: " + request.error);
+            });
+        }
+
+        private IEnumerator SpawnUnit_Post(Vector2Int gridPos, Unit data)
+        {
+            SpawnUnitPayload payload = new SpawnUnitPayload(gridPos, data);
+
+            string json = JsonUtility.ToJson(payload, true);
+
+            yield return SendPostRequest("spawnunit", json, (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    WorldUI.Instance.SpawnUnit(gridPos, data);
+                }
+                else
+                {
+                    Debug.LogError("Error Spawning Unit");
+                }
+            });
+        }
+
+        private IEnumerator SpawnBuilding_Post(Building building)
+        {
+            string url = BASE_URL + "spawnbuilding";
+            string json = JsonUtility.ToJson(building, true);
+
+            yield return SendPostRequest("spawnbuilding", json, (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    BuildingOverlay.Instance.PlaceBuilding(building);
+                    // Handle successful building spawn
+                    Debug.Log("Building spawned successfully.");
+                }
+                else
+                {
+                    Debug.LogError("Error Spawning Building");
+                }
+            });
+        }
+        private IEnumerator GetBiome_Get(Vector2Int pos)
+        {
+            // the problem is that MapConfig.BiomeRules is not passing the list of biome rules.
+            // check the generate grid route function
+            string queryString = pos.ToQuery();
+
+            yield return SendGetRequest("GetBiome", queryString, (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    string json = request.downloadHandler.text;
+                    BiomeData biome = JsonUtility.FromJson<BiomeData>(json);
+
+                    Debug.Log("Received Biome:\n " + json);
+                }
+                else
+                {
+                    Debug.LogError("Error fetching biome:" + request.error);
+                }
+            });
+        }
     }
 }

@@ -40,7 +40,7 @@ namespace CaseMaroon.WorldMap
             }
         }
 
-        public void SpawnUnit(Vector2Int position, UnitData data)
+        public void SpawnUnit(Vector2Int position, Unit data)
         {
             if(Application.platform == RuntimePlatform.WebGLPlayer)
             {

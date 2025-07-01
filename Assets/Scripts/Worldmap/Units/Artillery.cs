@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CaseMaroon.Units
 {
-    public class Artillery : UnitData
+    public class Artillery : Unit
     {
         public override UnitType UnitType => UnitType.Artillery;
 

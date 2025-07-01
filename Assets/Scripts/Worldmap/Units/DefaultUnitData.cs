@@ -97,7 +97,7 @@ namespace Assets.Scripts.Units
             MovementPoints = 60
         };
 
-        public static T CreateDefaultUnit<T>(Sprite image) where T : UnitData
+        public static T CreateDefaultUnit<T>(Sprite image) where T : Unit
         {
             switch (Type.GetTypeCode(typeof(T)))
             {
@@ -126,7 +126,7 @@ namespace Assets.Scripts.Units
             return null;
         }
 
-        public static UnitData CreateDefaultUnit(UnitType unitType, Sprite image)
+        public static Unit CreateDefaultUnit(UnitType unitType, Sprite image)
         {
             switch (unitType)
             {

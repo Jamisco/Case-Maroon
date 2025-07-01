@@ -28,7 +28,7 @@ namespace CaseMaroon.Units
         public int AgainstStructure;
     }
 
-    public abstract class UnitData
+    public abstract class Unit
     {
         public virtual int UnitId { get; set; }
         public virtual string UnitName { get; set; }
@@ -48,7 +48,7 @@ namespace CaseMaroon.Units
         /// Copy fields from another UnitData instance to this instance.
         /// </summary>
         /// <param name="other"></param>
-        public virtual void CopyFields(UnitData other)
+        public virtual void CopyFields(Unit other)
         {
             Image = other.Image;
             UnitName = other.UnitName;

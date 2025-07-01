@@ -23,7 +23,7 @@ namespace CaseMaroon.WorldMapUI
     {
         public enum InputState
         {
-            None,
+            Idle,
             PlacingBuilding,
             PlacingUnit,
             SelectingUnit,
@@ -99,7 +99,7 @@ namespace CaseMaroon.WorldMapUI
 
             InputStateChanged?.Invoke(new InputContext
             {
-                State = InputContext.InputState.None,
+                State = InputContext.InputState.Idle,
                 BuildType = null,
                 UnitType = null
             });
@@ -229,6 +229,12 @@ namespace CaseMaroon.WorldMapUI
         private List<Vector2Int> MoveablePositions = new List<Vector2Int>();
         private void CheckUnit(Vector2Int gridPos)
         {
+            // we should only click on units when we arent doing anything else
+            if (worldInputContext.State != InputState.Idle)
+            {
+                return;
+            }
+
             // if a unit was already selected, move it to the new position
             if (SelectedUnit != null)
             {
@@ -321,7 +327,7 @@ namespace CaseMaroon.WorldMapUI
             moveablePositions = HexFunctions.GetSurroundingTiles(unit.gridPosition, 2);
         }
 
-        private List<Vector2Int> GetUnitReachablePositions(UnitData data, Vector2Int curPos)
+        private List<Vector2Int> GetUnitReachablePositions(Unit data, Vector2Int curPos)
         {
             int maxMovement = data.MovementPoints;
 
@@ -360,7 +366,7 @@ namespace CaseMaroon.WorldMapUI
             return visited.Keys.ToList();
         }
 
-        public List<Vector2Int> GetFastestPath(UnitData data, Vector2Int start, Vector2Int dest)
+        public List<Vector2Int> GetFastestPath(Unit data, Vector2Int start, Vector2Int dest)
         {
             MovementType mt = data.MovementType;
 
@@ -434,12 +440,12 @@ namespace CaseMaroon.WorldMapUI
         {
             Sprite img = GameAssets.Instance.GetUnitImage(UnitType.Armored);
 
-            UnitData supply = DefaultUnitData.CreateDefaultUnit<Tank>(img);
+            Unit supply = DefaultUnitData.CreateDefaultUnit<Tank>(img);
 
             return GetFastestPath(supply, start, dest);
         }
 
-        public void SpawnUnit(Vector2Int gridPos, UnitData data)
+        public void SpawnUnit(Vector2Int gridPos, Unit data)
         {
             unitUIHelper.SpawnUnit(gridPos, data);
         }
@@ -447,7 +453,7 @@ namespace CaseMaroon.WorldMapUI
         {
             ValidateUnitParentObj();
 
-            UnitData newUnit = GameAssets.CreateUnit(UnitType.Infantry);
+            Unit newUnit = GameAssets.CreateUnit(UnitType.Infantry);
 
             unitUIHelper.SpawnUnit(gridPos, newUnit);
         }
