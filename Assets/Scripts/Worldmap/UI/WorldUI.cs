@@ -47,7 +47,7 @@ namespace CaseMaroon.WorldMapUI
 
         public UnitInfoUI_1 prefab;
 
-        public UIManager uiManager;
+        public UIManager UIManager;
 
         public Canvas UnitCanvas;
 

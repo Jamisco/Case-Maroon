@@ -40,7 +40,7 @@ namespace CaseMaroon.WorldMapUI
 
         private void Start()
         {
-            statItemPrefab = WorldUI.Instance.uiManager.starItemCard;
+            statItemPrefab = WorldUI.Instance.UIManager.starItemCard;
             statItemPrefab.gameObject.SetActive(true);
 
             SetData();

@@ -17,3 +17,4 @@ MonoBehaviour:
   starItemCard: {fileID: 5078701535376877615, guid: 6611977d0dba75e408bba7974ba4578c, type: 3}
   buildingItemCard: {fileID: 1809388443588880403, guid: ee0a13477d705eb46bdfa3b4b1666f5c, type: 3}
   unitItemCard: {fileID: 1487862086294129379, guid: 603ee0bf20ed05c49b08048718fa974c, type: 3}
+  messageBox: {fileID: 3384040050806468296, guid: 32d3596687966b040b9d61275cd57219, type: 3}

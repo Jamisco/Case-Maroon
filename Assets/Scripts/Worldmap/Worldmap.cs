@@ -25,8 +25,6 @@ namespace CaseMaroon.WorldMap
         /// </summary>
         public event WorldGenerated OnWorldGenerated;
 
-
-
         // create grid generated event
         public GridManager gridManager;
         public BiomeGenerator biomeGenerator;
@@ -56,6 +54,8 @@ namespace CaseMaroon.WorldMap
         public bool generating = false;
         //
         public bool WorldGenerated { get; private set; } = false;
+
+        public List<Vector2Int> landPositions = new List<Vector2Int>();
 
         private void Awake()
         {
@@ -156,6 +156,11 @@ namespace CaseMaroon.WorldMap
 
                     vData = biomeGenerator.GetLandVisualData(land, temp, rain);
                     snowData = biomeGenerator.GetSnowVisualData(temp);
+
+                    if(vData.GetType() == typeof(LandVisualData))
+                    {
+                        landPositions.Add(pos);
+                    }
 
                     gridManager.InsertVisualData(pos, vData);
                     gridManager.InsertVisualData(pos, snowData, snowLayer.LayerId);

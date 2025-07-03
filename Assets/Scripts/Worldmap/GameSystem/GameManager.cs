@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using CaseMaroon.WorldMap;
+using CaseMaroon.WorldMapUI;
 
 namespace CaseMaroon.GameSystem
 {
@@ -19,11 +20,18 @@ namespace CaseMaroon.GameSystem
         }
         private void Start()
         {
-
-            
+            Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
         }
 
+        bool canBegin = false;
+        private void OnWorldGenerated(Worldmap map)
+        {
+            string title = "Welcome General";
+            string message = "Your Objective is to Capture The Enemy Headquarters.\n" + "Good Luck";
 
+            MessageBox.Show(title, message);
+
+        }
 
     }
 }

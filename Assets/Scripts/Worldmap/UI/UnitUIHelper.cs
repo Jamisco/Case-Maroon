@@ -28,7 +28,7 @@ namespace CaseMaroon.WorldMapUI
             Vector3 position = grid.GridToWorldPostion(gridPos);
             position.z += -.1f;
 
-            UnitInfoUI_1 prefab = wu.uiManager.unitInfo_1;
+            UnitInfoUI_1 prefab = wu.UIManager.unitInfo_1;
 
             UnitInfoUI_1 unitUI 
                 = Object.Instantiate(prefab, unitParent.transform);

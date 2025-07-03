@@ -57,7 +57,7 @@ namespace CaseMaroon.WorldMapUI
 
         void InitCards()
         {
-            UnitItemCard unitPrefab = WorldUI.Instance.uiManager.unitItemCard;
+            UnitItemCard unitPrefab = WorldUI.Instance.UIManager.unitItemCard;
             // Initialize unit cards
             foreach (UnitType type in Enum.GetValues(typeof(UnitType)))
             {
@@ -66,7 +66,7 @@ namespace CaseMaroon.WorldMapUI
                 unitCards.Add(card);
             }
 
-            BuildingItemCard buildingPrefab = WorldUI.Instance.uiManager.buildingItemCard;
+            BuildingItemCard buildingPrefab = WorldUI.Instance.UIManager.buildingItemCard;
 
             // Initialize building cards
             foreach (BuildingType type in Enum.GetValues(typeof(BuildingType)))

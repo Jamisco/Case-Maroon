@@ -40,7 +40,6 @@ namespace CaseMaroon.WorldMap
         {
             gridSize = map.gridManager.GridSize;
             hexShape = map.gridManager.GetShape(Vector2Int.zero);
-            fogMeshFuser = new ShapeMeshFuser(hexShape);
 
             fogOverlay = new Mesh();
 
@@ -58,16 +57,8 @@ namespace CaseMaroon.WorldMap
         private void InitMeshFuser()
         {
             // The fog starts off with all positions covered
-           // as you add visible positions, it removes said positions from the fuser
-            for (int x = 0; x < gridSize.x; x++)
-            {
-                for(int y = 0; y < gridSize.y; y++)
-                {
-                    Vector2Int pos = new Vector2Int(x, y);
-
-                    fogMeshFuser.InsertPosition(pos);
-                }
-            }
+            // as you add visible positions, it removes said positions from the fuser
+            fogMeshFuser = new ShapeMeshFuser(hexShape, Vector3.zero, Worldmap.Instance.landPositions);
         }
 
         private void DrawFogMesh()

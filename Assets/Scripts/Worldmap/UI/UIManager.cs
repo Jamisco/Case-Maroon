@@ -12,6 +12,6 @@ namespace CaseMaroon.WorldMapUI
 
         public BuildingItemCard buildingItemCard;
         public UnitItemCard unitItemCard;
-
+        public MessageBox messageBox;
     }
 }

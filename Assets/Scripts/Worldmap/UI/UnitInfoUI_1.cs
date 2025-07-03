@@ -180,10 +180,10 @@ namespace CaseMaroon.Units
                 return;
             }
 
-            UnitInfoUI_2 u2Prefab = WorldMapUI.WorldUI.Instance.uiManager.unitInfo_2;
+            UnitInfoUI_2 u2Prefab = WorldMapUI.WorldUI.Instance.UIManager.unitInfo_2;
             UnitInfoUI_2 u2Obj = Instantiate(u2Prefab, this.transform);
 
-            StatItemCard statPrefab = WorldUI.Instance.uiManager.starItemCard;
+            StatItemCard statPrefab = WorldUI.Instance.UIManager.starItemCard;
             StatItemCard statItem = Instantiate(statPrefab, u2Obj.transform);
 
             u2Object = u2Obj.gameObject;
