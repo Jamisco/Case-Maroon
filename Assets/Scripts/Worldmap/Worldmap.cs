@@ -8,11 +8,23 @@ using static CaseMaroon.WorldMap.BiomeData;
 
 namespace CaseMaroon.WorldMap
 {
+    public delegate void WorldInitialized(Worldmap map);
+
     public delegate void WorldGenerated(Worldmap map);
     public class Worldmap : MonoBehaviour
     {
         public static Worldmap Instance { get; private set; }
+
+        /// <summary>
+        /// This is invoked when all the map data has been inserted but not the Map itself(the meshes) have not been created and drawn
+        /// </summary>
+        public event WorldGenerated OnWorldInitialized;
+
+        /// <summary>
+        /// This is invoke immediately after all the meshes have been drawn
+        /// </summary>
         public event WorldGenerated OnWorldGenerated;
+
 
 
         // create grid generated event
@@ -107,28 +119,6 @@ namespace CaseMaroon.WorldMap
             noiseGenerator.ComputeNoises(gridManager.GridSize, false);
         }
 
-        public void GenerateGrid_Validate()
-        {
-            //BackendTester.Instance.UploadMapConfig(this);
-            //// if upload successful
-            //if (ComputeNoise_Validate())
-            //{
-            //    DrawGrid();
-            //}
-            //else
-            //{
-            //    Debug.LogError("Noise Validation failed");
-            //    return;
-            //}
-
-            // tell server to compute its noise and send hash
-
-            // check if client and server noise hashes match
-
-            // if match call Gene
-
-        }
-
         public void GenerateGrid()
         {
             if (generating)
@@ -171,6 +161,8 @@ namespace CaseMaroon.WorldMap
                     gridManager.InsertVisualData(pos, snowData, snowLayer.LayerId);
                 }
             }
+
+            OnWorldInitialized?.Invoke(this);
 
             gridManager.DrawGrid();
 
@@ -250,7 +242,7 @@ namespace CaseMaroon.WorldMap
             {
                 gridPos = gridManager.WorldToGridPosition(mousePos);
 
-                if(gridPos != Vector2Int.left)
+                if(gridManager.ContainsGridPosition(gridPos))
                 {
                     worldPos = gridManager.GridToWorldPostion(gridPos);
                     return true;

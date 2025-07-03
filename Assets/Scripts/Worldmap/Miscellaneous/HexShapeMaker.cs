@@ -2,12 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
 
 namespace CaseMaroon.WorldMap
 {
     public class HexShapeMaker : MonoBehaviour
     {
-        public HexagonalShape baseShape;
+        public HexShapeMaker Instance { get; private set; }
+
+        private HexagonalShape baseShape;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject); // Prevent duplicates
+                return;
+            }
+        }
+        private void Start()
+        {
+            Worldmap.Instance.OnWorldInitialized += OnWorldInitialized;
+        }
+
+        private void OnWorldInitialized(Worldmap map)
+        {
+            baseShape = (HexagonalShape)map.gridManager.GetShape(Vector2Int.zero);
+
+        }
 
         #region Test Methods
 
@@ -24,13 +46,13 @@ namespace CaseMaroon.WorldMap
             = new Color[6] { Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta };
         private void Test_Mesh()
         {
-            Mesh tn = Generate(testScale, testHigh, testColors.ToList());
+            Mesh tn = GenerateHighlightMesh(testScale, testHigh, testColors.ToList());
 
             test.GetComponent<MeshFilter>().mesh = tn;
         }
 
         #endregion
-        public Mesh Generate(float scale, bool[] highlightedSides, List<Color> colors)
+        public Mesh GenerateHighlightMesh(float scale, bool[] highlightedSides, List<Color> colors)
         {
             // smaller scale, smaller size vice versa
             scale = 1 - scale;
@@ -109,9 +131,15 @@ namespace CaseMaroon.WorldMap
             return highlightMesh;
         }
 
-        public Mesh Generate(float scale)
+        public Mesh GenerateHighlightMesh(float scale)
         {
-            return Generate(scale, new bool[6], new List<Color> { Color.white, Color.white, Color.white, Color.white, Color.white, Color.white });
+            return GenerateHighlightMesh(scale, new bool[6], new List<Color> { Color.white, Color.white, Color.white, Color.white, Color.white, Color.white });
         }
+
+        public Mesh GetHexMesh()
+        {
+            return baseShape.ShapeMesh.GetMesh();
+        }
+
     }
 }

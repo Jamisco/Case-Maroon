@@ -2,6 +2,7 @@
 using CaseMaroon.WorldMap;
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using static CaseMaroon.WorldMap.BiomeGenerator;
 using static CaseMaroon.WorldMap.NoiseGenerator;
@@ -129,7 +130,6 @@ namespace CaseMaroon.Miscellaneous
                 biomeRules = biomeGenerator.biomeRules;
             }
         }
-
 
         public static string ToJson(this Vector2Int v)
         {

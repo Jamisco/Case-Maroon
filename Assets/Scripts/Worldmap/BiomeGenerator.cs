@@ -56,6 +56,7 @@ namespace CaseMaroon.WorldMap
             public Material LavaMaterial;
             public Material WaterMaterial;
             public Material HighlightMaterial;
+
             public Color highlightColor;
 
             [Tooltip("Rounding factor for the biome data. Used to group noise values. For example, if you have 2 noise values .82 and .81, and your Rounding factor is 5, these noise values will be rounded to the next .05 values, thus, the noise value will actually be .80. A low rounding factor means more unique values vice value of high.")]
@@ -123,6 +124,11 @@ namespace CaseMaroon.WorldMap
 
             foreach (BiomeRules r in biomeRules)
             {
+                if(r.biomeType == BiomeType.Ocean)
+                {
+                    continue;
+                }
+
                 if (temperature >= r.tempRange.x && temperature <= r.tempRange.y &&
                     rainfall >= r.rainRange.x && rainfall <= r.rainRange.y)
                 {

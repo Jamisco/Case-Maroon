@@ -4,6 +4,7 @@ using System;
 using System.Reflection;
 using System.Linq;
 using CaseMaroon.Miscellaneous;
+using System.Data.Common;
 
 namespace CaseMaroon
 {
@@ -29,6 +30,12 @@ namespace CaseMaroon
                         m.Name.StartsWith("Test_", StringComparison.OrdinalIgnoreCase)
                     )
                     .ToArray();
+
+                if(methods.Count() == 0)
+                {
+                    Debug.LogWarning("No Methods Found");
+                    return;
+                }
 
                 string[] methodNames = methods.Select(m => m.Name).ToArray();
                 int selectedIndex = Mathf.Max(0, Array.IndexOf(methodNames, invoker.methodName));
