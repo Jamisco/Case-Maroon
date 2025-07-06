@@ -157,7 +157,7 @@ namespace CaseMaroon.WorldMap
                     vData = biomeGenerator.GetLandVisualData(land, temp, rain);
                     snowData = biomeGenerator.GetSnowVisualData(temp);
 
-                    if(vData.GetType() == typeof(LandVisualData))
+                    if(biomeGenerator.IsLand(land))
                     {
                         landPositions.Add(pos);
                     }

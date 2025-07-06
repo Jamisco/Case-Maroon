@@ -135,7 +135,10 @@ namespace CaseMaroon.Systems
 
                 virtualCamera.m_Lens.OrthographicSize = newZoom;
 
-                //cameraConfiner.InvalidateCache();
+                // cache has to be invalidate whenever zoom is changed. This is because, confiner works my limiting the box in which camera can move.
+                // as this zoom changes, this box, also changes, and when you invalidateCache, you essentially recalculate said box.
+                // if cache is not invalidated, you will be unable to drag the mouse around the map accurately.
+                cameraConfiner.InvalidateCache();
             }
         }
 

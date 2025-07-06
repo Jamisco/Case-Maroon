@@ -193,7 +193,12 @@ namespace CaseMaroon.WorldMap
             return null;
         }
 
-        // this shouldnt matter
+        public bool IsLand(float land)
+        {
+            return land > waterThreshold;
+        }
+
+        // this shouldn't matter
         private float Round(float number)
         {
             // round to 2 decimal places

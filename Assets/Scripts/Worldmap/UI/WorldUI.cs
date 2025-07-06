@@ -16,7 +16,7 @@ namespace CaseMaroon.WorldMapUI
     public delegate void GridPositionSelectedHandler(Vector2Int gridPos);
     public delegate void GridRightClickedHandler(Vector2Int gridPos);
     public delegate void InputStateChangedHandler(InputContext inputContext);
-    public delegate void BuildingPlacedHandler(Vector2Int gridPos);
+    public delegate void BuildingPlacedHandler(Vector2Int gridPos, Building building);
     public delegate void UnitPlaced(Vector2Int gridPos, UnitType unitType);
 
     public struct InputContext
@@ -186,6 +186,11 @@ namespace CaseMaroon.WorldMapUI
         public void InvokeInputState(InputContext context)
         {
             InputStateChanged?.Invoke(context);
+        }
+
+        public void InvokeBuildingPlace(Vector2Int gridPos, Building building)
+        {
+            BuildingPlaced?.Invoke(gridPos, building);
         }
 
         private void ValidateUnitParentObj()

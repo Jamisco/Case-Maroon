@@ -1,6 +1,8 @@
 ﻿using CaseMaroon.Units;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static CaseMaroon.Miscellaneous.GlobalData;
@@ -9,6 +11,8 @@ namespace CaseMaroon.WorldMapUI
 {
     public class SideOverlay : MonoBehaviour
     {
+        public static SideOverlay Instance { get; private set; }
+
         public Button buildingButton;
         public Button unitButton;
 
@@ -21,7 +25,13 @@ namespace CaseMaroon.WorldMapUI
 
         private void Awake()
         {
-            
+            Instance = this;
+
+            if(Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
 
         void FlipOutlines()
@@ -54,7 +64,6 @@ namespace CaseMaroon.WorldMapUI
                 FillWithTroops();
             });
         }
-
         void InitCards()
         {
             UnitItemCard unitPrefab = WorldUI.Instance.UIManager.unitItemCard;
@@ -106,5 +115,57 @@ namespace CaseMaroon.WorldMapUI
                 card.gameObject.SetActive(true);
             }
         }
+
+
+        private Coroutine flickerCoroutine;
+        private float initAlpha;
+        private bool outlineState = false;
+        public void HighlightCard(BuildingType buildType, bool enable = true)
+        {
+            BuildingItemCard card = buildingCards.FirstOrDefault(x => x.buildType == buildType);
+
+            if (card == null || card.outlineObj == null)
+                return;
+
+            if(enable)
+            {
+                initAlpha = card.outlineObj.effectColor.a;
+                outlineState = card.outlineObj.enabled;
+
+                flickerCoroutine = StartCoroutine(FlickerOutline(card.outlineObj));
+            }
+            else
+            {
+                StopCoroutine(flickerCoroutine);
+                SetOutlineAlpha(card.outlineObj, initAlpha);
+                card.outlineObj.enabled = outlineState;
+            }
+        }
+
+        private IEnumerator FlickerOutline(Outline outline)
+        {
+            float speed = 2f;
+            Color baseColor = outline.effectColor;
+            baseColor.a = 1f; // ensure max alpha is 1
+
+            while (true)
+            {
+                outline.enabled = true;
+
+                float t = Mathf.PingPong(Time.time * speed, 1f); // 0 ↔ 1
+                float alpha = Mathf.Lerp(0.2f, 1f, t); // flicker between low and high alpha
+
+                SetOutlineAlpha(outline, alpha);
+                yield return null;
+            }
+        }
+
+        private void SetOutlineAlpha(Outline outline, float alpha)
+        {
+            Color c = outline.effectColor;
+            c.a = alpha;
+            outline.effectColor = c;
+        }
+
     }
 }

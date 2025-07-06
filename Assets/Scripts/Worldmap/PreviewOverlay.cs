@@ -8,20 +8,24 @@ using static CaseMaroon.WorldMapUI.InputContext;
 
 namespace CaseMaroon.WorldMap
 {
+    [RequireComponent(typeof(SpriteRenderer))]
     public class PreviewOverlay : MonoBehaviour
     {
-        [SerializeField]
         private SpriteRenderer spriteRenderer;
 
         private Sprite selectedSprite;
         public bool IsPreviewing { get; private set; } = false;
+
+        [SerializeField]
+        private float zDepth = -0.06f;
+
+        private void Awake()
+        {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
         private void Start()
         {
-            if (spriteRenderer == null)
-            {
-                Debug.LogError("SpriteRenderer component is missing on the PreviewOverlay GameObject.");
-            }
-
             WorldUI.Instance.InputStateChanged += OnInputStateChanged;
             WorldUI.Instance.GridPositionSelected += OnGridPositionSelected;
             WorldUI.Instance.GridRightClicked += GridRightClicked;
@@ -70,6 +74,7 @@ namespace CaseMaroon.WorldMap
 
             if(Worldmap.Instance.TryGetMouseMapPosition(out Vector2Int gridPos, out Vector3 worldPos))
             {
+                worldPos.z = zDepth;
                 spriteRenderer.transform.position = worldPos;
             }
         }

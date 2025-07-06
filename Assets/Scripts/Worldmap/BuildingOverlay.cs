@@ -37,13 +37,8 @@ namespace CaseMaroon.WorldMap
             worldmap = Worldmap.Instance;
 
             WorldUI.Instance.GridPositionSelected += OnGridPositionSelected;
-            WorldUI.Instance.BuildingPlaced += OnBuildingPlaced;
             WorldUI.Instance.GridRightClicked += OnGridRightClicked;
 
-        }
-        private void OnBuildingPlaced(Vector2Int gridPos)
-        {
-            throw new System.NotImplementedException();
         }
 
         private void Update()
@@ -83,6 +78,8 @@ namespace CaseMaroon.WorldMap
                                 .GetBuildingImage(buildType);
 
             buildings[gridPos] = building;
+
+            WorldUI.Instance.InvokeBuildingPlace(gridPos, building);
         }
     }
 }

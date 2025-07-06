@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using CaseMaroon.GameSystem;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,7 +27,6 @@ namespace CaseMaroon.WorldMapUI
                 titleObj.text = value;
             }
         }
-
         public string Message
         {
             get
@@ -38,7 +38,6 @@ namespace CaseMaroon.WorldMapUI
                 messageObj.text = value;
             }
         }
-
         private void Awake()
         {
         }
@@ -51,7 +50,6 @@ namespace CaseMaroon.WorldMapUI
         private void CloseBox()
         {
             Destroy(this.gameObject);
-
         }
 
         /// <summary>
@@ -72,6 +70,11 @@ namespace CaseMaroon.WorldMapUI
 
             return box;
 
+        }
+
+        public static MessageBox Show(MessageData data)
+        {
+            return Show(data.title, data.message);
         }
     }
 }
