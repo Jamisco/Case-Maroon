@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Ocean
-  m_Shader: {fileID: -6465566751694194690, guid: 0d175323f2ef7ad428cc750307ca34a3, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 1c2e4e193573c50478d06f887b0f6978, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -77,6 +77,7 @@ Material:
     - _Power: 2
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Size: 0.11
     - _Smoke_Int: 1
     - _Smoothness: 0
     - _Speed: 0.65
