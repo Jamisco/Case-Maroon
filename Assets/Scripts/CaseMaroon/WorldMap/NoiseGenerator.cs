@@ -13,7 +13,7 @@ namespace CaseMaroon.WorldMap
 
         [Header("Rain Noise")]
 
-        public NoiseSettings rainNoiseSettings;
+        public NoiseSettings rainNoiseSettings; 
 
         [Header("Temperature Noise")]
 

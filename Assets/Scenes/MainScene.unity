@@ -231,23 +231,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 91323525}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ccdc0be4501b1314a992ce550ab73e15, type: 3}
+  m_Script: {fileID: 11500000, guid: 5a99611ec1bcfe84e9431881d1ee44d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldmap: {fileID: 0}
   shape: {fileID: 91323529}
   material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   zOffset: -1
-  outlineScale: 0.2
-  HexOverlay: {fileID: 0}
-  borderColor:
-    r: 1
-    g: 0
-    b: 0.015481949
-    a: 0.3254902
-  enemyOverlay: {fileID: 0}
-  friendlyPosition: []
-  canDraw: 0
+  outlineScale: 0.1
+  borderColor: {r: 1, g: 0, b: 0, a: 0.65882355}
 --- !u!4 &91323528
 Transform:
   m_ObjectHideFlags: 0
@@ -384,12 +375,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 194170519}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80396448aa294cf4c9dbd2133d2274b9, type: 3}
+  m_Script: {fileID: 11500000, guid: e9c68e298f4d68e4cafbda2002bc43bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
-  selectedSprite: {fileID: 0}
-  <IsPreviewing>k__BackingField: 0
   zDepth: -0.06
 --- !u!212 &194170522
 SpriteRenderer:
@@ -666,7 +654,7 @@ Transform:
   m_GameObject: {fileID: 230619568}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.9, y: 7.8, z: -4}
+  m_LocalPosition: {x: 14.624981, y: 10.6875, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -777,6 +765,7 @@ GameObject:
   - component: {fileID: 242525309}
   - component: {fileID: 242525310}
   - component: {fileID: 242525311}
+  - component: {fileID: 242525312}
   m_Layer: 0
   m_Name: Logistic Overlay
   m_TagString: Untagged
@@ -809,7 +798,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 242525308}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58eb2c8e00ae50342801fbacbfa6b9b7, type: 3}
+  m_Script: {fileID: 11500000, guid: 464f38848f463c7449be02f7a7426877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   masterRoadHex: {fileID: 242525311}
@@ -831,6 +820,20 @@ MonoBehaviour:
   mapScale: 1.5
   testObj: {fileID: 1637792830}
   testMask: 100001
+--- !u!114 &242525312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242525308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddf47e5b28e7a9345b4bb96d0df68415, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetScript: {fileID: 242525310}
+  methodName: Test_Logi
 --- !u!1 &341060755
 GameObject:
   m_ObjectHideFlags: 0
@@ -2420,7 +2423,6 @@ MonoBehaviour:
   - {x: 19, y: 19}
   saveLocation: Assets/Worldmap/WorldmapSave.txt
   polygonCollider: {fileID: 633136820}
-  worldmapOverlay: {fileID: 91323527}
 --- !u!4 &633136814
 Transform:
   m_ObjectHideFlags: 0
@@ -2501,7 +2503,7 @@ MonoBehaviour:
     minValue: 0
     maxValue: 1
     offset: {x: 0, y: 0}
-  NoiseModified: 0
+  NoiseModified: 1
   printAverage: 0
 --- !u!60 &633136820
 PolygonCollider2D:
@@ -2571,7 +2573,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &782721556
 Transform:
   m_ObjectHideFlags: 0
@@ -2596,14 +2598,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 782721555}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c345398a4b5dde45823e99540e69823, type: 3}
+  m_Script: {fileID: 11500000, guid: 48e4fd03b511a984cbe0c817b580e371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fogOverlay: {fileID: 0}
-  hexShape: {fileID: 0}
   fogMaterial: {fileID: 2100000, guid: 7513f85a190629b459662bb22010b3c9, type: 2}
   visiblePosition: []
-  gridSize: {x: 0, y: 0}
 --- !u!33 &782721558
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -2771,12 +2770,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1017673698}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5391e652ec9ec2d46bc3922e2237c7d6, type: 3}
+  m_Script: {fileID: 11500000, guid: 3c465d35815dff641a537ece6754b006, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spriteScale: 0.5
-  worldmap: {fileID: 0}
-  logistics: {fileID: 242525310}
 --- !u!43 &1019581812
 Mesh:
   m_ObjectHideFlags: 0
@@ -3133,8 +3130,7 @@ MonoBehaviour:
   UIManager: {fileID: 11400000, guid: 962d0def29119f84892e6a4838319adf, type: 2}
   UnitCanvas: {fileID: 1038734894}
   AllUnitsParent: {fileID: 1735662422}
-  maxDragDistance: 1
-  prevBuildPos: {x: -1, y: 0}
+  maxDragDistance: 5
 --- !u!1001 &1253402547
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5357,7 +5353,7 @@ GameObject:
   - component: {fileID: 1377316382}
   - component: {fileID: 1377316381}
   - component: {fileID: 1377316380}
-  - component: {fileID: 1377316383}
+  - component: {fileID: 1377316384}
   m_Layer: 0
   m_Name: Virtual Camera
   m_TagString: Untagged
@@ -5377,7 +5373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f453f694addf4275988fac205bc91968, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_BoundingShape2D: {fileID: 0}
+  m_BoundingShape2D: {fileID: 633136820}
   m_Damping: 0
   m_MaxWindowSize: -1
 --- !u!114 &1377316381
@@ -5435,7 +5431,7 @@ Transform:
   - {fileID: 228557925}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1377316383
+--- !u!114 &1377316384
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5444,18 +5440,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1377316379}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a972d3c711d7b2648bb6d5c9200f7c16, type: 3}
+  m_Script: {fileID: 11500000, guid: 7962f5bf81b6d7a4f85ff3745e92fa54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 0}
-  worldMap: {fileID: 0}
-  virtualCamera: {fileID: 0}
-  cameraConfiner: {fileID: 0}
   dragSpeed: 2
-  scrollSpeed: 10
-  minZoom: 0.5
-  maxZoom: 25
-  dragOrigin: {x: 0, y: 0, z: 0}
+  scrollSpeed: 2
+  minZoom: 5
+  maxZoom: 20
   withinMap: 0
 --- !u!1 &1450863029
 GameObject:
@@ -5592,14 +5583,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 407d20ee8e3239d45aa02e4d42d7c393, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualType: 1
-  movementType: 0
-  biomeConfig: {fileID: 0}
-  cellPrefab: {fileID: 0}
-  LandMat: {fileID: 0}
-  defaultMat: {fileID: 0}
-  gridSize: 10
-  cellSpacing: 0.5
 --- !u!4 &1623212065
 Transform:
   m_ObjectHideFlags: 0
@@ -6211,51 +6194,51 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 120
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 44.444443
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 190
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6608385312051706962, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -27.222221
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 120
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 44.444443
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 60
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333182514796067283, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -27.222221
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7352583706408858147, guid: 2a1f4fda457ba134aaf4b7c7fe14ac4d, type: 3}
       propertyPath: m_Pivot.x

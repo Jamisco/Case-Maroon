@@ -17,7 +17,7 @@ namespace CaseMaroon.WorldMap
             Taiga,
             SnowForest,
             Grassland,
-            DeciduousForest,
+            DeciduousForest, 
             Swamp,
             Desert,
             Savannah,
@@ -121,18 +121,20 @@ namespace CaseMaroon.WorldMap
             {
                 rule = biomeRules.FirstOrDefault(x => x.biomeType == BiomeType.Ocean);
             }
-
-            foreach (BiomeRules r in biomeRules)
+            else
             {
-                if(r.biomeType == BiomeType.Ocean)
+                foreach (BiomeRules r in biomeRules)
                 {
-                    continue;
-                }
+                    if (r.biomeType == BiomeType.Ocean)
+                    {
+                        continue;
+                    }
 
-                if (temperature >= r.tempRange.x && temperature <= r.tempRange.y &&
-                    rainfall >= r.rainRange.x && rainfall <= r.rainRange.y)
-                {
-                    rule = r;
+                    if (temperature >= r.tempRange.x && temperature <= r.tempRange.y &&
+                        rainfall >= r.rainRange.x && rainfall <= r.rainRange.y)
+                    {
+                        rule = r;
+                    }
                 }
             }
 

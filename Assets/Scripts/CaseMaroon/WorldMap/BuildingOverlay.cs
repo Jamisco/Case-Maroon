@@ -15,8 +15,6 @@ namespace CaseMaroon.WorldMap
 
         private Worldmap worldmap;
 
-        public LogisticsOverlay logistics;
-
         public Dictionary<Vector2Int, Building> buildings = new Dictionary<Vector2Int, Building>();
 
  

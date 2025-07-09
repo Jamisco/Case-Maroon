@@ -2,6 +2,7 @@
 using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -211,14 +212,15 @@ namespace CaseMaroon.WorldMapUI
                 AllUnitsParent.transform.localScale = new Vector3(sc, sc, sc);
             }
         }
+
+
         protected virtual void OnGridPositionSelected(Vector2Int gridPos)
         {
             // move the unit to the new position
             // this is used to get the center of the shape at the grid position, 
             // this is the position we will spawn the unit at
 
-            Debug.Log("Position Selected: " + gridPos.ToString());
-            return;
+            //Debug.Log("Position: " + gridPos.ToString());
 
             CheckUnit(gridPos);
 
@@ -270,7 +272,6 @@ namespace CaseMaroon.WorldMapUI
             }
         }
 
-        public Vector2Int prevBuildPos = Vector2Int.left;
         protected virtual void OnUnitSelected(UnitInfoUI_1 unit)
         {
             if (!unit.Equals(SelectedUnit))
@@ -386,7 +387,7 @@ namespace CaseMaroon.WorldMapUI
 
             List<Vector2Int> openSet = new List<Vector2Int> { start };
             costSoFar[start] = 0;
-
+                
             while (openSet.Count > 0)
             {
                 // Find node in openSet with the lowest cost
@@ -415,7 +416,7 @@ namespace CaseMaroon.WorldMapUI
                     int moveCost = biome.GetMovementCost(mt);
 
                     if (moveCost < 0 || moveCost == int.MaxValue)
-                        continue; // Impassable
+                    continue; // Impassable
 
                     int newCost = costSoFar[current] + moveCost;
 

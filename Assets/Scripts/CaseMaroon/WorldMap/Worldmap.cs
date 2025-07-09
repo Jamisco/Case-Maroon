@@ -90,7 +90,7 @@ namespace CaseMaroon.WorldMap
         public void OnValidate()
         {
             if(gridManager == null)
-            {
+            { 
                 Init();
             }
 
@@ -146,6 +146,8 @@ namespace CaseMaroon.WorldMap
             Vector2Int pos;
             ShapeVisualData vData;
             ShapeVisualData snowData;
+
+            landPositions.Clear();
 
             for (int x = 0; x < gridManager.GridSize.x; x++)
             {

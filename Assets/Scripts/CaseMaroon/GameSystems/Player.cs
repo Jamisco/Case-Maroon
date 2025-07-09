@@ -17,7 +17,6 @@ namespace CaseMaroon.GameSystem
             return false;
         }
 
-
         private void RequestDataFromSever()
         {
             // when the game starts, request data such as positions, units, building...

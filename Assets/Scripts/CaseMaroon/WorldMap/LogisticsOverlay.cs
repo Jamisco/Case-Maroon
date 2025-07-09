@@ -121,5 +121,12 @@ namespace CaseMaroon.WorldMap
             return HexFunctions.GetConnectingSide(from, to);
         }
 
+
+        public void Test_Logi()
+        {
+            Vector2Int start = BuildingOverlay.Instance.buildings.First().Key;
+
+            SupplyMapUnits(start);
+        }
     }
 }

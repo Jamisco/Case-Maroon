@@ -18,7 +18,7 @@ MonoBehaviour:
     LavaMaterial: {fileID: -876546973899608171, guid: 0d37aaecccc9961429849739ec2a886e, type: 3}
     WaterMaterial: {fileID: -876546973899608171, guid: 1c2e4e193573c50478d06f887b0f6978, type: 3}
     HighlightMaterial: {fileID: 2100000, guid: 423a8dab2b16b0540afc71926094b4a7, type: 2}
-    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    highlightColor: {r: 1, g: 1, b: 1, a: 0.3529412}
     roundingFactor: 30
   waterThreshold: 0.2
   snowThreshold: 0

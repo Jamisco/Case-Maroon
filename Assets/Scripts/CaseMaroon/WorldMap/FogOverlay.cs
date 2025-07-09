@@ -1,13 +1,7 @@
 ﻿using CaseMaroon.Miscellaneous;
-using CaseMaroon.WorldMapUI;
 using GridMapMaker;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
-using UnityEngine.ProBuilder.Shapes;
-using UnityEngine.UIElements;
 
 namespace CaseMaroon.WorldMap
 {
