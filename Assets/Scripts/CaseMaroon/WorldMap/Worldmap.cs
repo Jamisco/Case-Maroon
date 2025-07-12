@@ -3,6 +3,8 @@ using GridMapMaker;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using CaseMaroon.Backend;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -244,6 +246,29 @@ namespace CaseMaroon.WorldMap
             // Assign the path to the collider
             polygonCollider.SetPath(0, points);
         }
+
+        public List<Vector2Int> GetRemainderPositions(List<Vector2Int> positions)
+        {
+            List<Vector2Int> r = new List<Vector2Int>();
+
+            Vector2Int pos;
+
+            for (int x = 0; x < gridManager.GridSize.x; x++)
+            {
+                for (int y = 0; y < gridManager.GridSize.y; y++)
+                {
+                    pos = new Vector2Int(x, y);
+
+                    if(!positions.Contains(pos))
+                    {
+                        r.Add(pos);
+                    }
+                }
+            }
+
+            return r;
+        }
+
         public bool TryGetMouseMapPosition(out Vector2Int gridPos, out Vector3 worldPos)
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);

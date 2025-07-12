@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using static CaseMaroon.Miscellaneous.GlobalData;
 using static CaseMaroon.WorldMapUI.InputContext;
 using CaseMaroon.Units;
+using CaseMaroon.Backend;
 
 namespace CaseMaroon.WorldMap
 {
@@ -78,6 +79,8 @@ namespace CaseMaroon.WorldMap
             buildings[gridPos] = building;
 
             WorldUI.Instance.InvokeBuildingPlaced(gridPos, building);
+
+            BackendTester.Instance.SyncGameState();
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using CaseMaroon.Units;
-using CaseMaroon.WorldMap;
-using CaseMaroon.WorldMapUI;
+﻿using CaseMaroon.WorldMap;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;

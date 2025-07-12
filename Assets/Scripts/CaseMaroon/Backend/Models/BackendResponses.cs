@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using static CaseMaroon.Miscellaneous.GlobalData;
+using CaseMaroon.Units;
+using CaseMaroon.GameSystem;
+using CaseMaroon.WorldMap;
 
 namespace CaseMaroon.Backend
 {
@@ -26,6 +29,27 @@ namespace CaseMaroon.Backend
             {
                 return JsonUtility.FromJson<MapConfigResponse>(json);
             }
+        }
+
+        [Serializable]
+        public struct PlayerResponse
+        {
+            public int id;
+            public List<ReconPosition > reconPositions;
+            public List<Vector2Int> ownedPositions;
+        }
+
+        [Serializable]
+        public struct GameStateResponse
+        {
+            public List<PlayerResponse> players;
+            public Vector2Int gridSize;
+
+            public static GameStateResponse FromJson(string json)
+            {
+                return JsonUtility.FromJson<GameStateResponse>(json);
+            }
+
         }
 
     }

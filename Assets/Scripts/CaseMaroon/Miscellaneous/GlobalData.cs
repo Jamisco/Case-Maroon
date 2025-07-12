@@ -1,12 +1,10 @@
-﻿using System;
+﻿using GridMapMaker;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.ProBuilder.MeshOperations;
 
 namespace CaseMaroon.Miscellaneous
 {
@@ -50,7 +48,6 @@ namespace CaseMaroon.Miscellaneous
                 return raycastResults.Any(r => r.gameObject.layer == UI_WorldMask);
             }
         }
-
         public static bool LeftBtnPressedThisFrame
         {
             get
@@ -58,7 +55,6 @@ namespace CaseMaroon.Miscellaneous
                 return Mouse.current.leftButton.wasPressedThisFrame;
             }
         }
-
         public static Mesh CombineMeshes(List<Mesh> meshes)
         {
             List<CombineInstance> combineInstances = new List<CombineInstance>();
@@ -80,6 +76,36 @@ namespace CaseMaroon.Miscellaneous
 
             return combinedMesh;
         }
+        
+        /// <summary>
+        /// Will Combine the meshes as submeshes instead of one single mesh
+        /// </summary>
+        /// <param name="meshes"></param>
+        /// <returns></returns>
+        public static Mesh CombineMeshes_Sub(List<Mesh> meshes)
+        {
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+
+            int i = 0;
+
+            foreach (var mesh in meshes)
+            {
+                CombineInstance ci = new CombineInstance
+                {
+                    mesh = mesh,
+                    transform = Matrix4x4.identity,
+                };
+
+                combineInstances.Add(ci);
+            }
+
+            Mesh combinedMesh = new Mesh();
+
+            combinedMesh.CombineMeshes(combineInstances.ToArray(), false, false);
+
+            return combinedMesh;
+        }
+
 
         public static Mesh CombineMeshes(List<Mesh> meshes, List<Vector3> worldPos)
         {
@@ -109,23 +135,67 @@ namespace CaseMaroon.Miscellaneous
 
         public enum BuildingType { Headquarters, SupplyDepot}
 
-        public struct ReconPosition
+        [Serializable]
+        public struct ReconPosition : IEquatable<ReconPosition>
         {
             //Recon levels
-	           // 0 - Can see nothing
-	           // 1 - Can see Biome/Hex
+	           // 0 - Can see nothing - Fog
+	           // 1 - Can see Biome/Hex - Friend/Foe/Neutral
 	           // 2 - Can see Unit outline
 	           // 3 - Can see Unit Stats(with x accuracy)
 	           // 4 - Can see Unit Stats(with x++ accuracy)
 	           // 5 - Can see Unit Stats(with full accuracy)
 
             public Vector2Int gridPosition;
-            public int reconLevel; 
-
-            public ReconPosition(Vector2Int gridPos, int reconLevel)
+            public int ReconLevel
             {
-                this.gridPosition = gridPos;
-                this.reconLevel = reconLevel;
+                get
+                {
+                    int total = unitRecon + buildingRecon;
+
+                    return Math.Clamp(total, 0, 5);
+                }
+            }
+            public int unitRecon;
+            public int buildingRecon;
+
+            public ReconPosition(Vector2Int gridPos)
+            {
+                gridPosition = gridPos;
+                unitRecon = 0;
+                buildingRecon = 0;
+            }
+            public ReconPosition(Vector2Int gridPos, int ur, int br)
+            {
+                gridPosition = gridPos;
+                unitRecon = ur;
+                buildingRecon = br;
+            }
+
+            public void AddRecon(ReconPosition rp)
+            {
+                unitRecon += rp.unitRecon;
+                buildingRecon += rp.buildingRecon;
+            }
+            public void RemoveRecon(ReconPosition rp)
+            {
+                unitRecon -= rp.unitRecon;
+                buildingRecon -= rp.buildingRecon;
+            }
+
+            public bool Equals(ReconPosition other)
+            {
+                return gridPosition.Equals(other.gridPosition);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ReconPosition other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return gridPosition.GetHashCode_Unique();
             }
         }
     }

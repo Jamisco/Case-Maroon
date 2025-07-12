@@ -1,84 +1,99 @@
-﻿using CaseMaroon.Miscellaneous;
+﻿using CaseMaroon.GameSystem;
+using CaseMaroon.Miscellaneous;
 using GridMapMaker;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
+using static CaseMaroon.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.WorldMap
 {
     [RequireComponent(typeof(MeshRenderer))]
     [RequireComponent(typeof(MeshFilter))]
+    [RequireComponent(typeof(HexShapeMaker))]
     public class WorldmapOverlay : MonoBehaviour
     {
-        private Worldmap worldmap;
+        public static WorldmapOverlay Instance { get; private set; }   
 
-        public HexShapeMaker shape;
-        public Material material;
+        private Worldmap worldMap;
 
+        [Tooltip("The zoffset for the overlay that shows when a mouse is over a hex")]
         [SerializeField]
-        private float zOffset = -1;
+        private float mouseOverlayZOffset = -1;
 
+        [Tooltip("The scale of the hex overlay that is use to show which hex the mouse is hovering")]
         [Range(0.01f, 1f)]
         public float outlineScale = 0.1f;
 
-        /// <summary>
-        /// Use to highlight hexes
-        /// </summary>
-        private Mesh HexOverlay;
+        [SerializeField]
+        private Material overlayMaterial;
 
         [SerializeField]
-        private Color borderColor;
+        private Color enemyOverlayColor;
+
+        [SerializeField]
+        private Color neutralOverlayColor;
+
+        [SerializeField]
+        private Material fogMaterial;
 
         private ShapeMeshFuser enemyMeshFuser;
+        private ShapeMeshFuser fogMeshFuser;
+
+
+        /// <summary>
+        /// Use to highlight/overlay hexes
+        /// </summary>
+        private Mesh HexOverlay;
 
         /// <summary>
         /// Used to distinguish between friendly and Non Friendly hexes
         /// </summary>
         private Mesh enemyOverlay;
 
-
         /// <summary>
-        /// A list of friendly positions which will be excluded from being marked
+        /// Mesh used to draw fog 
         /// </summary>
-        private List<Vector2Int> friendlyPosition = new List<Vector2Int>();
+        private Mesh fogOverlay;
+
+        private List<ReconPosition> reconPositions = new List<ReconPosition>();
+
+
         private void Awake()
         {
+            Instance = this;
+
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
 
         private void Start()
         {
-            if (shape == null)
-            {
-                Debug.LogError("Shape is not assigned.");
-                return;
-            }
-
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
         }
 
         private void OnWorldGenerated(Worldmap map)
         {
-            worldmap = map;
-            CreateHighlightMesh();
+            worldMap = map;
 
-            InitBorderFuser();
-            DrawBorderOverlay();
+            InitOverlay();
 
             canDraw = true;
         }
         private void Update()
         {
-            DrawHexOverlay();
-        }
-        private void CreateHighlightMesh()
-        {
-            HexOverlay = shape.GenerateHighlightMesh(outlineScale);
+            DrawHexMouseOverlay();
         }
 
         private bool canDraw = false;
-        private void DrawHexOverlay()
+
+        /// <summary>
+        /// Draws a hex overlay at the current mouse position to denote which hex is selected
+        /// </summary>
+        private void DrawHexMouseOverlay()
         {
             if(!canDraw)
             {
@@ -88,55 +103,90 @@ namespace CaseMaroon.WorldMap
             Vector2Int gridPos = Vector2Int.zero; 
             Vector3 worldPos = Vector3.zero;
 
-            if (worldmap.TryGetMouseMapPosition(out gridPos, 
+            if (worldMap.TryGetMouseMapPosition(out gridPos, 
                                         out worldPos))
             {
-                worldPos.z = zOffset;
+                worldPos.z = mouseOverlayZOffset;
 
                 Graphics.DrawMesh(HexOverlay,
                                         worldPos,
                                         Quaternion.identity,
-                                        material,
+                                        overlayMaterial,
                                         0);
             }
         }
-
         private void Test_Border()
         {
-            InitBorderFuser();
-            DrawBorderOverlay();
+            InitOverlay();
+            
         }
-
-        private void InitBorderFuser()
+        private void InitOverlay()
         {
 #if UNITY_EDITOR
 
-            worldmap = FindAnyObjectByType<Worldmap>();
+            worldMap = FindAnyObjectByType<Worldmap>();
 #endif
-            GridShape shape = worldmap.gridManager.GetShape(Vector2Int.zero);
+            GridShape shape = worldMap.gridManager.GetShape(Vector2Int.zero);
 
             enemyMeshFuser = new ShapeMeshFuser(shape);
+            fogMeshFuser = new ShapeMeshFuser(shape);
 
-            Vector2Int gridSize = worldmap.gridManager.GridSize;
+            reconPositions.Clear();
 
-            for (int x = gridSize.x / 2; x < gridSize.x; x++)
+            foreach (Vector2Int landPos in Worldmap.Instance.landPositions)
             {
-                for (int y = 0; y < gridSize.y; y++)
-                {
-                    Vector2Int pos = new Vector2Int(x, y);
+                reconPositions.Add(new ReconPosition(landPos));
+            }
 
-                    enemyMeshFuser.InsertPosition(pos, borderColor);
+            HexOverlay = HexShapeMaker.Instance.GenerateHighlightMesh(outlineScale);
+        }
+        
+        public void UpdateReconOverlay()
+        {
+            Player mp = GameState.Instance.MainPlayer;
+
+            fogMeshFuser.Clear();
+            enemyMeshFuser.Clear();
+
+            foreach(ReconPosition pos in reconPositions)
+            {
+                int recon = pos.ReconLevel;
+
+                if(mp.ReconPositions.TryGetValue(pos, out ReconPosition rp))
+                {
+                    recon = rp.ReconLevel;
+                }
+
+                if(recon == 0)
+                {
+                    fogMeshFuser.InsertPosition(pos.gridPosition);
+                }
+                else if (recon == 1)
+                {
+                    // here we can check if the hex belongs to enemy or is neutral and send in the appropriate color
+
+                    if (!mp.OwnedPositions.Contains(pos.gridPosition))
+                    {
+                        enemyMeshFuser.InsertPosition(pos.gridPosition, enemyOverlayColor);
+                    }
                 }
             }
-        }
-        private void DrawBorderOverlay()
-        {
-            //if(Worldmap.Instance.WorldGenerated == false)
-            //{
-            //    return;
-            //}
 
-            Vector2Int gridSize = worldmap.gridManager.GridSize;
+            DrawEnemyOverlay();
+            DrawFogOverlay();
+
+            List<Mesh> com = new List<Mesh> { enemyOverlay, fogOverlay };
+            Material[] mats = new Material[] { overlayMaterial, fogMaterial };
+
+            Mesh mesh = GlobalData.CombineMeshes_Sub(com);
+
+            GetComponent<MeshFilter>().sharedMesh = mesh;   
+            GetComponent<MeshRenderer>().materials = mats;
+        }
+
+        private void DrawEnemyOverlay()
+        {
+            Vector2Int gridSize = worldMap.gridManager.GridSize;
 
             List<Mesh> md = new List<Mesh>();
 
@@ -145,19 +195,21 @@ namespace CaseMaroon.WorldMap
             // consider adding a mesh layer and just removing the hexes
 
             enemyOverlay = GlobalData.CombineMeshes(md);
+        }
+        private void DrawFogOverlay()
+        {
+            Vector2Int gridSize = worldMap.gridManager.GridSize;
 
-            GetComponent<MeshFilter>().mesh = enemyOverlay;
-            GetComponent<MeshRenderer>().material = material;
+            List<Mesh> md = new List<Mesh>();
+
+            fogMeshFuser.GetFuseMesh().ForEach(x => md.Add(x.GetMesh()));
+            // this took way too much effort,
+            // consider adding a mesh layer and just removing the hexes
+
+            fogOverlay = GlobalData.CombineMeshes(md);
         }
-        private void AddEnemyPosition(Vector2Int pos)
-        {
-            enemyMeshFuser.InsertPosition(pos);
-            DrawBorderOverlay();
-        }
-        private void RemoveEnemyPosition(Vector2Int pos)
-        {
-            enemyMeshFuser.RemovePosition(pos);
-            DrawBorderOverlay();
-        }
+
+        
+
     }
 }

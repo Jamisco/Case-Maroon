@@ -1,5 +1,7 @@
 ﻿using CaseMaroon.Backend;
+using CaseMaroon.GameSystem;
 using CaseMaroon.Units;
+using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
 using System;
 using System.Collections;
@@ -13,13 +15,17 @@ using static CaseMaroon.Backend.BackendPayloads;
 using static CaseMaroon.Backend.BackendResponses;
 using Debug = UnityEngine.Debug;
 
-namespace CaseMaroon.WorldMap
+namespace CaseMaroon.Backend
 {
+    public delegate void GameStateSyncedHandler(GameStateResponse gsr);
+
     public class BackendTester : MonoBehaviour
     {
         public static BackendTester Instance { get; private set; }
         public string BASE_URL = "http://localhost:3001/api";
         public bool USELOCALBACKEND = false;
+
+        public event GameStateSyncedHandler GameStateSynced;
 
         private void Awake()
         {
@@ -172,12 +178,10 @@ namespace CaseMaroon.WorldMap
         {
             StartCoroutine(PlaceBuilding_Post(building));
         }
-
         public void GetBiome(Vector2Int gridPos)
         {
             StartCoroutine(GetBiome_Get(gridPos));
         }
-
         public void UploadMapConfig(Worldmap worldMap)
         {
             if (worldMap == null)
@@ -187,6 +191,10 @@ namespace CaseMaroon.WorldMap
             }
 
             StartCoroutine(GenerateGrid_Post(worldMap));
+        }
+        public void SyncGameState()
+        {
+            StartCoroutine(GetGameState_Get());
         }
 
         private IEnumerator GenerateGrid_Post(Worldmap worldMap)
@@ -232,7 +240,6 @@ namespace CaseMaroon.WorldMap
                 }
             });
         }
-
         private IEnumerator SendPostRequest(string endpoint, string json, System.Action<UnityWebRequest> onComplete)
         {
             string url = BASE_URL + endpoint;
@@ -331,6 +338,29 @@ namespace CaseMaroon.WorldMap
                 else
                 {
                     Debug.LogError("Error fetching biome:" + request.error);
+                }
+            });
+        }
+        private IEnumerator GetGameState_Get()
+        {
+            // No query string needed if it's a general state fetch
+            yield return SendGetRequest("GetGameState", "", (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    string json = request.downloadHandler.text;
+
+                    GameStateResponse gameState = GameStateResponse.FromJson(json);
+
+                    GameStateSynced?.Invoke(gameState);
+
+                    Debug.Log("Received Game State:\n" + json);
+
+                    // You can now use `gameState` to update the client view
+                }
+                else
+                {
+                    Debug.LogError("Error fetching game state: " + request.error);
                 }
             });
         }

@@ -8,12 +8,14 @@ namespace CaseMaroon.WorldMap
 {
     public class HexShapeMaker : MonoBehaviour
     {
-        public HexShapeMaker Instance { get; private set; }
+        public static HexShapeMaker Instance { get; private set; }
 
         private HexagonalShape baseShape;
 
         private void Awake()
         {
+            Instance = this;
+
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject); // Prevent duplicates

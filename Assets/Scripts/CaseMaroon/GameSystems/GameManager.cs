@@ -6,6 +6,7 @@ using CaseMaroon.Miscellaneous;
 using System.Collections;
 using CaseMaroon.Units;
 using static CaseMaroon.Miscellaneous.GlobalData;
+using CaseMaroon.Backend;
 
 namespace CaseMaroon.GameSystem
 {
@@ -22,6 +23,8 @@ namespace CaseMaroon.GameSystem
     {
         public GameManager Instance { get; private set; }
         public MessageManager messageManager;
+
+        public bool StartSequence = false;
         public enum InitMessage { Welcome, SpawnHQ, PlaceUnits}
         public enum InitGameState
         {
@@ -48,9 +51,23 @@ namespace CaseMaroon.GameSystem
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
         }
 
+        private void OnValidate()
+        {
+            if (Application.isPlaying && StartSequence && Worldmap.Instance.WorldGenerated)
+            {
+                StopCoroutine(StartGameSequenceCoroutine());
+                StartCoroutine(StartGameSequenceCoroutine());
+            }
+        }
+
         private void OnWorldGenerated(Worldmap map)
         {
-            StartCoroutine(StartGameSequenceCoroutine());
+            BackendTester.Instance.SyncGameState();
+
+            if(StartSequence)
+            {
+                StartCoroutine(StartGameSequenceCoroutine());
+            }
         }
 
         public void DisableButtons()

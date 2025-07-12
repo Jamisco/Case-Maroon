@@ -236,6 +236,7 @@ namespace CaseMaroon.WorldMapUI
             //}
 
             //gridCollider.points = worldMap.polygonCollider.points;
+
         }
 
         private UnitInfoUI_1 SelectedUnit { get; set; }
@@ -447,7 +448,6 @@ namespace CaseMaroon.WorldMapUI
             path.Reverse();
             return path;
         }
-            
         public List<Vector2Int> GetLogisticsPath(Vector2Int start, Vector2Int dest)
         {
             Sprite img = GameAssets.Instance.GetUnitImage(UnitType.Armored);

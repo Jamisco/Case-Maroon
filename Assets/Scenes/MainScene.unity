@@ -234,11 +234,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a99611ec1bcfe84e9431881d1ee44d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shape: {fileID: 91323529}
-  material: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-  zOffset: -1
+  mouseOverlayZOffset: -1
   outlineScale: 0.1
-  borderColor: {r: 1, g: 0, b: 0, a: 0.65882355}
+  overlayMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  enemyOverlayColor: {r: 0.38039216, g: 0, b: 0, a: 0.90588236}
+  neutralOverlayColor: {r: 0.6792453, g: 0.5681737, b: 0.5681737, a: 0.7137255}
+  fogMaterial: {fileID: 2100000, guid: 7513f85a190629b459662bb22010b3c9, type: 2}
 --- !u!4 &91323528
 Transform:
   m_ObjectHideFlags: 0
@@ -844,6 +845,7 @@ GameObject:
   m_Component:
   - component: {fileID: 341060757}
   - component: {fileID: 341060756}
+  - component: {fileID: 341060758}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -864,6 +866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageManager: {fileID: 11400000, guid: 02bbaa40fbde0234d8c4c9e21fe3b4b5, type: 2}
+  StartSequence: 0
   currentInitState: 0
 --- !u!4 &341060757
 Transform:
@@ -880,6 +883,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &341060758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 341060755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fccdd551979566e409b8c705426c4b52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &531831028
 GameObject:
   m_ObjectHideFlags: 0
