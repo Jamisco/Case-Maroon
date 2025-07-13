@@ -1,0 +1,90 @@
+=== Game Classes and Properties Summary ===
+
+1. GameState
+- Properties:
+  - map: WorldMap
+  - players: Map<playerId, Player>
+  - unitsById: Map<unitId, Unit>
+  - unitsByGrid: Map<"x,y", Unit[]>
+  - buildingsById: Map<buildingId, Building>
+  - buildingsByGrid: Map<"x,y", Building[]>
+- Methods:
+  - spawnUnit(playerId, unitData)
+  - spawnBuilding(playerId, buildingData)
+  - updateAllVision()
+
+2. WorldMap
+- Properties:
+  - width: number
+  - height: number
+  - tiles: Map<"x,y", Tile>  // tile data (biome, terrain, etc.)
+- Methods:
+  - getTileAt(x, y)
+  - isWalkable(pos)
+  - isBuildable(pos)
+
+3. Tile
+- Properties:
+  - pos: Vector2Int
+  - biome: string
+  - walkable: boolean
+  - buildable: boolean
+  - visionModifier: number (optional)
+
+4. Player
+- Properties:
+  - id: string
+  - unitIds: Set<unitId>
+  - buildingIds: Set<buildingId>
+  - reconMap: Map<"x,y", ReconLevel>   // fog state
+  - detectionMap: Map<"x,y", number>   // optional, for stealth
+- Methods:
+  - updateVisionFromUnitsAndBuildings()
+  - canSeeTile(x, y)
+
+5. Unit
+- Properties:
+  - id: string
+  - ownerId: string
+  - gridPosition: Vector2Int
+  - visionRange: number
+  - detectionPower: number
+  - stealth: number
+  - hp: number
+  - otherCombatStats...
+
+6. Building
+- Properties:
+  - id: string
+  - ownerId: string
+  - gridPosition: Vector2Int
+  - visionRange: number
+  - buildingType: string
+
+7. Vector2Int
+- Properties:
+  - x: number
+  - y: number
+- Methods:
+  - toKey(): string   // for map key usage (e.g. "5,10")
+
+8. Enums (Static/Utility)
+- ReconLevel:
+  - None = 0
+  - SeenBefore = 1
+  - CurrentlyVisible = 2
+
+9. Optional Utility Classes
+- FogUtils (optional)
+  - projectVision(sourcePos, radius)
+  - projectDetection(sourcePos, power)
+
+=== Notes ===
+- Tile visibility stored per player in reconMap
+- Units and buildings know their position and owner
+- Map logic encapsulated in WorldMap
+- Game lifecycle and state managed by GameState
+
+---
+
+Copy and paste this as needed for your project planning.
