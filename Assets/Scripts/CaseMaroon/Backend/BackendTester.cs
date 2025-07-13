@@ -75,7 +75,7 @@ namespace CaseMaroon.Backend
                 return;
             }
 
-            string scriptPath = @"W:\Unity Projects\Case Maroon Root\Case Maroon_Backend\src\index.js";
+            string scriptPath = @"W:\Unity Projects\Case Maroon\Case Maroon_Backend\src\index.js";
 
             if (!File.Exists(scriptPath))
             {
