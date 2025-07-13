@@ -1,0 +1,93 @@
+﻿using Assets.Scripts.Units;
+using CaseMaroon.Units;
+using System;
+using System.Linq;
+using UnityEngine;
+using static CaseMaroon.Miscellaneous.GlobalData;
+
+namespace CaseMaroon.WorldMap
+{
+    /// <summary>
+    /// Holds the data used to create units. Data such as sprites, unit type etc
+    /// </summary>
+    [Serializable]
+    [CreateAssetMenu(fileName = "GameAssets", menuName = "CaseMaroon/GameAssets", order = 1)]
+    public class GameAssets : ScriptableObject
+    {
+        public static GameAssets Instance { get; private set; }
+
+        public UnitAssets[] unitSettings;
+        public BuildingAssets[] buildingSettings;
+
+        private void OnEnable()
+        {
+            Instance = this;
+        }
+
+        [Serializable]
+        public struct UnitAssets
+        {
+            public UnitType unitType;
+            public Sprite[] Images;
+        }
+
+        [Serializable]
+        public struct BuildingAssets
+        {
+            public BuildingType buildType;
+            public Sprite[] Images;
+        }
+
+
+        public Unit CreateUnit(UnitType ut)
+        {
+            Unit unitData = null;
+            Sprite sprite;
+
+            switch (ut)
+            {
+                case UnitType.Infantry:
+                    sprite = unitSettings.Where(x => x.unitType == UnitType.Infantry).FirstOrDefault().Images[0];
+
+                    unitData = DefaultUnitData.CreateDefaultUnit<Infantry>(sprite);
+
+                    int ran2DNumber = UnityEngine.Random.Range(10, 99);
+
+                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
+                    unitData.UnitName = ran2DNumber.ToString() + " Infantry Division";
+
+                    break;
+                case UnitType.Armored:
+
+                    sprite = unitSettings.Where(x => x.unitType == UnitType.Armored).FirstOrDefault().Images[0];
+
+                    unitData = DefaultUnitData.CreateDefaultUnit<Tank>(sprite);
+
+                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
+                    ran2DNumber = UnityEngine.Random.Range(10, 99);
+                    unitData.UnitName = ran2DNumber.ToString() + " Armored Division";
+
+                    break;
+                case UnitType.Artillery:
+
+
+                    sprite = unitSettings.Where(x => x.unitType == UnitType.Artillery).FirstOrDefault().Images[0];
+
+                    break;
+            }
+
+            return unitData;
+
+        }
+
+        public Sprite GetUnitImage(UnitType ut)
+        {
+            return unitSettings.Where(x => x.unitType == ut).FirstOrDefault().Images[0];
+        }
+
+        public Sprite GetBuildingImage(BuildingType bt)
+        {
+            return buildingSettings.Where(x => x.buildType == bt).FirstOrDefault().Images[0];
+        }
+    }
+}
