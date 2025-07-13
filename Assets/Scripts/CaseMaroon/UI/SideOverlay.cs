@@ -247,6 +247,10 @@ namespace CaseMaroon.WorldMapUI
             c.a = alpha;
             outline.effectColor = c;
         }
+
+        /// <summary>
+        /// Will disable the card objects
+        /// </summary>
         public void RemoveAllCards()
         {
             foreach (UnitItemCard child in unitCards)
@@ -258,6 +262,23 @@ namespace CaseMaroon.WorldMapUI
             foreach (BuildingItemCard card in buildingCards)
             {
                 card.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// Will delete the card objects
+        /// </summary>
+        public void DeleteAllCards()
+        {
+            foreach (UnitItemCard child in unitCards)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Instantiate building cards
+            foreach (BuildingItemCard card in buildingCards)
+            {
+                DestroyImmediate(card.gameObject);
             }
         }
     }

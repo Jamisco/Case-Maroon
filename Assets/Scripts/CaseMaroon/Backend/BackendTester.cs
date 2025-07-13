@@ -354,7 +354,7 @@ namespace CaseMaroon.Backend
 
                     GameStateSynced?.Invoke(gameState);
 
-                    Debug.Log("Received Game State:\n" + json);
+                    Debug.Log("Received Game State:\n");
 
                     // You can now use `gameState` to update the client view
                 }

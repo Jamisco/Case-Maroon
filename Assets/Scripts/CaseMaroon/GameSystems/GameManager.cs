@@ -7,6 +7,7 @@ using System.Collections;
 using CaseMaroon.Units;
 using static CaseMaroon.Miscellaneous.GlobalData;
 using CaseMaroon.Backend;
+using UnityEditor;
 
 namespace CaseMaroon.GameSystem
 {
@@ -47,17 +48,17 @@ namespace CaseMaroon.GameSystem
         }
         private void Start()
         {
-            DisableButtons();
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
         }
 
-        private void OnValidate()
+        public void RestartGame()
         {
-            if (Application.isPlaying && StartSequence && Worldmap.Instance.WorldGenerated)
-            {
-                StopCoroutine(StartGameSequenceCoroutine());
-                StartCoroutine(StartGameSequenceCoroutine());
-            }
+            Worldmap.Instance.Start();
+            BuildingOverlay.Instance.buildings.Clear();
+            WorldUI.Instance.Clear();
+
+            StopCoroutine(StartGameSequenceCoroutine());
+            StartCoroutine(StartGameSequenceCoroutine());
         }
 
         private void OnWorldGenerated(Worldmap map)
@@ -66,7 +67,13 @@ namespace CaseMaroon.GameSystem
 
             if(StartSequence)
             {
+                DisableButtons();
                 StartCoroutine(StartGameSequenceCoroutine());
+            }
+            else
+            {
+                SideOverlay.Instance.CreateAllCards();
+                SideOverlay.Instance.FlipOutlines(SideOverlay.SelectedCard.BuildingCards);
             }
         }
 
@@ -78,6 +85,7 @@ namespace CaseMaroon.GameSystem
         private void SpawnHQ_Step()
         {
             SideOverlay.Instance.buildingButton.enabled = true;
+            SideOverlay.Instance.RemoveAllCards();
 
             SideOverlay.Instance.FlipOutlines(SideOverlay.SelectedCard.BuildingCards);
 
@@ -194,4 +202,24 @@ namespace CaseMaroon.GameSystem
         }
 
     }
+
+#if UNITY_EDITOR
+
+    [CustomEditor(typeof(GameManager))]
+    public class GameManagerEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+
+            GameManager exampleScript = (GameManager)target;
+
+            if (GUILayout.Button("Restart Game"))
+            {
+                exampleScript.RestartGame();
+            }
+        }
+    }
+
+#endif
 }
