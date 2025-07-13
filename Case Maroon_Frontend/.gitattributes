@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Accidentally added these webgl build files in previous commit,
+# I dont want linguist counting them
+"Case Maroon_Frontend/Builds/**" linguist-vendored
+"Case Maroon_Frontend/public/Unity/**" linguist-vendored
+
+
