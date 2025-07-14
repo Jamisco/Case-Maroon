@@ -29,13 +29,14 @@ namespace CaseMaroon.Backend
 
         private void Awake()
         {
+            Instance = this;
+
             // Ensure only one instance exists
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
-            Instance = this;
 
             // Optional: persist between scenes
             // DontDestroyOnLoad(gameObject);
@@ -229,6 +230,9 @@ namespace CaseMaroon.Backend
                     {
                         string grid = worldMap.gridManager.GridSize.x + "  x " + worldMap.gridManager.GridSize.y;
 
+                        Debug.Log($"Hash Match! " +
+                            $"Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}%");
+
                         Worldmap.Instance.GenerateGrid();
                     }
                     else
@@ -355,7 +359,9 @@ namespace CaseMaroon.Backend
                     string json = request.downloadHandler.text;
                     BiomeData biome = JsonUtility.FromJson<BiomeData>(json);
 
-                    Debug.Log("Received Biome:\n " + json);
+                    BotOverlay.Instance.SyncServerBiome(biome);
+
+                    //Debug.Log("Received Biome:\n " + json);
                 }
                 else
                 {

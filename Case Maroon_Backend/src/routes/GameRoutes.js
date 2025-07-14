@@ -220,7 +220,7 @@ export function gameRoutes(gameState) {
         });
       }
 
-      res.json(biome);
+      res.json(biome.toJSON());
     } catch (error) {
       console.error("Error in /GetBiome:", error);
       res.status(500).json({

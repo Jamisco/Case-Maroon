@@ -140,7 +140,7 @@ export class NoiseSettings {
     tempNoise = Math.max(this.minValue, Math.min(this.maxValue, tempNoise));
 
     // Step 6: Final round
-    tempNoise = Math.round(tempNoise * 1e3) / 1e3;
+    tempNoise = Math.round(tempNoise * 1e2) / 1e2;
 
     return tempNoise;
   }

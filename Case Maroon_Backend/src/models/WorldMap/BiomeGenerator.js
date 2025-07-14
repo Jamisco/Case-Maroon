@@ -1,16 +1,15 @@
 export class BiomeGenerator {
   constructor(biomeConfig) {
-
     this.waterThreshold = biomeConfig.waterThreshold;
     this.snowThreshold = biomeConfig.snowThreshold;
-    
+
     this.biomeRules = biomeConfig.biomeRules.map(
       (rule) => new BiomeRules(rule)
     );
   }
 
   getMatchingBiome(temperature, rainfall, land = null) {
-    let rule = {};
+    let rule = null;
 
     if (land !== null && land < this.waterThreshold) {
       rule = this.biomeRules.find((r) => r.biomeType === "Ocean");
@@ -23,12 +22,7 @@ export class BiomeGenerator {
         continue;
       }
 
-      if (
-        temperature >= r.tempRange.x &&
-        temperature <= r.tempRange.y &&
-        rainfall >= r.rainRange.x &&
-        rainfall <= r.rainRange.y
-      ) {
+      if (r.withinRules(temperature, rainfall)) {
         rule = r;
       }
     }
@@ -53,9 +47,18 @@ export class BiomeRules {
         : new BiomeTraversalCost(traversalCost);
   }
 
+  withinRules(temp, rain) {
+    return (
+      temp >= this.tempRange.x &&
+      temp <= this.tempRange.y &&
+      rain >= this.rainRange.x &&
+      rain <= this.rainRange.y
+    );
+  }
+
   toJSON() {
     return {
-      biomeType: BiomeType[this.biomeType] || "Unknown", // number → string
+      biomeType: this.biomeType, // number → string
       tempRange: { x: this.tempRange.x, y: this.tempRange.y },
       rainRange: { x: this.rainRange.x, y: this.rainRange.y },
       traversalCost: this.traversalCost.toJSON?.() || this.traversalCost,
@@ -80,7 +83,7 @@ export class BiomeData {
 
   toJSON() {
     return {
-      biomeType: BiomeType[this.biomeType] || "Unknown", // convert number → string
+      biomeType: this.biomeType, 
       temperature: this.temperature,
       rain: this.rain,
       moveCost: this.moveCost,
@@ -93,7 +96,6 @@ export class BiomeConfig {
     this.waterThreshold = waterThreshold; // number
     this.snowThreshold = snowThreshold; // number
     this.biomeRules = biomeRules; // array of BiomeRules
-
   }
 }
 

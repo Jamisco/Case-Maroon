@@ -1,4 +1,5 @@
-﻿using CaseMaroon.Units;
+﻿using CaseMaroon.Backend;
+using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
 using GridMapMaker;
@@ -12,6 +13,7 @@ namespace CaseMaroon.WorldMapUI
 {
     public class BotOverlay : MonoBehaviour
     {
+        public static BotOverlay Instance { get; private set; }
         public string BuildingTitle
         {
             get
@@ -63,6 +65,17 @@ namespace CaseMaroon.WorldMapUI
         public Image hexImage;
         public GameObject hexStatsParent;
 
+        private void Awake()
+        {
+            Instance = this;
+
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+        }
+
         private void Start()
         {
             ClearChilds();
@@ -100,23 +113,43 @@ namespace CaseMaroon.WorldMapUI
         }
         private void InsertBiomeData(Vector2Int gridPos)
         {
+            recent = gridPos;
+
             Material data = Worldmap.Instance.GetMaterial(gridPos);
 
             hexImage.material = data;
 
+            BackendTester.Instance.GetBiome(gridPos);
+
+            return;
+
             BiomeData biomeData = Worldmap.Instance.GetBiomeData(gridPos);
 
-            StatItemCard statCard = WorldUI.Instance.UIManager.starItemCard;
+            StatItemCard startCardPrefab = WorldUI.Instance.UIManager.starItemCard;
 
-            List<StatItemCard> stats = biomeData.CreateList(statCard);
+            List<StatItemCard> stats = biomeData.CreateList(startCardPrefab);
 
             foreach (StatItemCard stat in stats)
             {
                 stat.gameObject.SetActive(true);
                 stat.transform.SetParent(hexStatsParent.transform, false);
             }
+        }
 
-            //BackendTester.Instance.GetBiome(gridPos);
+        private Vector2Int recent;
+        public void SyncServerBiome(BiomeData data)
+        {
+            BiomeData biomeData = Worldmap.Instance.GetBiomeData(recent);
+
+            StatItemCard startCardPrefab = WorldUI.Instance.UIManager.starItemCard;
+
+            List<StatItemCard> stats = biomeData.CreateList_Sync(startCardPrefab, data);
+
+            foreach (StatItemCard stat in stats)
+            {
+                stat.gameObject.SetActive(true);
+                stat.transform.SetParent(hexStatsParent.transform, false);
+            }
         }
 
         public void ClearBuildings()

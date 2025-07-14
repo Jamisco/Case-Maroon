@@ -90,8 +90,6 @@ namespace CaseMaroon.WorldMap
                 }
             }
 
-
-
             NoiseModified = false;
 
             if (printAverage)

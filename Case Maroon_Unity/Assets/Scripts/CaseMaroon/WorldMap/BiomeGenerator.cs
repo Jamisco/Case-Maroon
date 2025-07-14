@@ -46,6 +46,12 @@ namespace CaseMaroon.WorldMap
             public Vector2 rainRange;
 
             public BiomeTraversalCost traversalCost;
+
+            public bool WithinRules(float temp, float rain)
+            {
+                return temp >= tempRange.x && temp <= tempRange.y &&
+                       rain >= rainRange.x && rain <= rainRange.y;
+            }
         }
 
         [Serializable]
@@ -130,8 +136,7 @@ namespace CaseMaroon.WorldMap
                         continue;
                     }
 
-                    if (temperature >= r.tempRange.x && temperature <= r.tempRange.y &&
-                        rainfall >= r.rainRange.x && rainfall <= r.rainRange.y)
+                    if(r.WithinRules(temperature, rainfall))
                     {
                         rule = r;
                     }
@@ -146,8 +151,7 @@ namespace CaseMaroon.WorldMap
 
             foreach (BiomeRules r in biomeRules)
             {
-                if (temperature >= r.tempRange.x && temperature <= r.tempRange.y &&
-                    rainfall >= r.rainRange.x && rainfall <= r.rainRange.y)
+                if (r.WithinRules(temperature, rainfall))
                 {
                     rule = r;
                 }
