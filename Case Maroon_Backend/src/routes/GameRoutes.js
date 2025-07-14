@@ -12,7 +12,7 @@ import { MapConfigSchema } from "../models/WorldMap/MapConfig.schema.js";
 
 import { Worldmap } from "../models//WorldMap/Worldmap.js";
 
-import { HexFunctions, ReconPosition } from "../models/Miscellaneous/index.js"
+import { HexFunctions, ReconPosition } from "../models/Miscellaneous/index.js";
 
 import { Building } from "../models/Buildings/index.js";
 
@@ -48,7 +48,7 @@ export function gameRoutes(gameState) {
 
     let noiseHash = worldMap.noiseGenerator.getNoiseHash();
     gameState.initGame(worldMap);
-    
+
     // ✅ Send back a success response
     return res.status(200).json({
       success: true,
@@ -94,6 +94,41 @@ export function gameRoutes(gameState) {
     }
   });
 
+  router.post("/moveunit", (req, res) => {
+    
+    const { gridPosition, unit } = req.body;
+
+    console.log("Received move unit request:", gridPosition);
+    
+    
+    if (!v2IntValidator(gridPosition) || !unitValidator(unit)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid unit or vector format",
+      });
+    }
+
+    try {
+      if (gameState.moveUnit(unit, gridPosition)) {
+        return res.status(200).json({
+          success: true,
+          message: "Unit moved successfully",
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: "Failed to move unit",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        success: false,
+        message: "Server error while moving unit",
+      });
+    }
+  });
+
   router.post("/placebuilding", (req, res) => {
     const building = req.body;
 
@@ -115,7 +150,7 @@ export function gameRoutes(gameState) {
           message: "Building already exists at this position",
         });
       }
-      
+
       return res.status(200).json({
         success: true,
         message: "Building spawned successfully",
@@ -186,7 +221,6 @@ export function gameRoutes(gameState) {
       }
 
       res.json(biome);
-      
     } catch (error) {
       console.error("Error in /GetBiome:", error);
       res.status(500).json({
@@ -200,7 +234,7 @@ export function gameRoutes(gameState) {
     console.log("Received GetGameState Request:", req.query);
 
     let gs = gameState.worldMap;
-    
+
     try {
       res.json(gameState.toJSON());
     } catch (error) {

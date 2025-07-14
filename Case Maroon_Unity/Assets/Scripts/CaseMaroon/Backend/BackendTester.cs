@@ -168,12 +168,14 @@ namespace CaseMaroon.Backend
         {
             StartCoroutine(SendGridPositionCoroutine(gridPos));
         }
-
         public void SpawnUnit(Vector2Int gridPos, Unit data)
         {
             StartCoroutine(SpawnUnit_Post(gridPos, data));
         }
-
+        public void MoveUnit(Unit unit, Vector2Int gridPos)
+        {
+            StartCoroutine(MoveUnit_Post(unit, gridPos));
+        }
         public void SpawnBuilding(Building building)
         {
             StartCoroutine(PlaceBuilding_Post(building));
@@ -284,7 +286,7 @@ namespace CaseMaroon.Backend
 
         private IEnumerator SpawnUnit_Post(Vector2Int gridPos, Unit data)
         {
-            SpawnUnitPayload payload = new SpawnUnitPayload(gridPos, data);
+            UnitActionPayload payload = new UnitActionPayload(gridPos, data);
 
             string json = JsonUtility.ToJson(payload, true);
 
@@ -300,6 +302,26 @@ namespace CaseMaroon.Backend
                 }
             });
         }
+        private IEnumerator MoveUnit_Post(Unit data, Vector2Int gridPos)
+        {
+            UnitActionPayload payload = new UnitActionPayload(gridPos, data);
+
+            string json = JsonUtility.ToJson(payload, true);
+
+            yield return SendPostRequest("moveunit", json, (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    WorldUI.Instance.MoveSelectedUnit(data, gridPos);
+                }
+                else
+                {
+                    Debug.LogError("Error Moving Unit");
+                }
+            });
+        }
+
+
 
         private IEnumerator PlaceBuilding_Post(Building building)
         {

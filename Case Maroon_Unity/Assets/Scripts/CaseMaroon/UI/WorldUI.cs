@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Units;
+using CaseMaroon.Backend;
 using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
@@ -192,11 +193,13 @@ namespace CaseMaroon.WorldMapUI
         public void InvokeBuildingPlaced(Vector2Int gridPos, Building building)
         {
             BuildingPlaced?.Invoke(gridPos, building);
+            BackendTester.Instance.SyncGameState();
         }
 
         public void InvokeUnitPlaced(Vector2Int gridPos, UnitType type)
         {
             UnitPlaced?.Invoke(gridPos, type);
+            BackendTester.Instance.SyncGameState();
         }
 
         private void ValidateUnitParentObj()
@@ -212,7 +215,6 @@ namespace CaseMaroon.WorldMapUI
                 AllUnitsParent.transform.localScale = new Vector3(sc, sc, sc);
             }
         }
-
 
         protected virtual void OnGridPositionSelected(Vector2Int gridPos)
         {
@@ -259,13 +261,13 @@ namespace CaseMaroon.WorldMapUI
                 }
                 else
                 {
-                    MoveSelectedUnit(SelectedUnit, gridPos);
+                    BackendTester.Instance.MoveUnit(SelectedUnit.unit, gridPos);
                 }
             }
             else
             {
                 // if there is a unit on that position, select it
-                if (unitUIHelper.GetUnit(gridPos, 
+                if (unitUIHelper.GetUnitInfos(gridPos, 
                                     out List<UnitInfoUI_1> unit))
                 {
                     OnUnitSelected(unit.Last());
@@ -282,7 +284,7 @@ namespace CaseMaroon.WorldMapUI
                 SelectedUnit = unit;
                 SelectedUnit.EnableOutline();
 
-                MoveablePositions = GetUnitReachablePositions(SelectedUnit.data, SelectedUnit.gridPosition);
+                MoveablePositions = GetUnitReachablePositions(SelectedUnit.unit, SelectedUnit.gridPosition);
 
                 MoveablePositions = MoveablePositions.OrderBy(x => x.x).ToList();
 
@@ -298,13 +300,13 @@ namespace CaseMaroon.WorldMapUI
         }
         public bool GetUnits(Vector2Int gridPos, out List<UnitInfoUI_1> unit)
         {
-            return unitUIHelper.GetUnit(gridPos, out unit);
+            return unitUIHelper.GetUnitInfos(gridPos, out unit);
         }
 
-        public void MoveSelectedUnit(UnitInfoUI_1 unitInfo, Vector2Int gridPos)
+        public void MoveSelectedUnit(Unit unit, Vector2Int gridPos)
         {
             // cannot move unit to its current position
-            if (unitInfo == null || gridPos == unitInfo.gridPosition)
+            if (unit == null || gridPos == unit.GridPosition)
             {
                 return;
             }
@@ -316,9 +318,9 @@ namespace CaseMaroon.WorldMapUI
                 return;
             }
 
-            List<Vector2Int> path = GetFastestPath(unitInfo.data, unitInfo.gridPosition, gridPos);
+            List<Vector2Int> path = GetFastestPath(unit, unit.GridPosition, gridPos);
 
-            unitUIHelper.MoveToPosition_Animate(unitInfo, path);
+            unitUIHelper.MoveToPosition_Animate(unit, path);
             DeselectCurrentUnit();
 
             Canvas.ForceUpdateCanvases();
@@ -459,7 +461,7 @@ namespace CaseMaroon.WorldMapUI
 
         public void SpawnUnit(Vector2Int gridPos, Unit data)
         {
-            unitUIHelper.SpawnUnit(gridPos, data);
+            unitUIHelper.SpawnUnit(data, gridPos);
         }
         public void SpawnTestUnit(Vector2Int gridPos)
         {
@@ -467,7 +469,7 @@ namespace CaseMaroon.WorldMapUI
 
             Unit newUnit = GameAssets.CreateUnit(UnitType.Infantry);
 
-            unitUIHelper.SpawnUnit(gridPos, newUnit);
+            unitUIHelper.SpawnUnit(newUnit, gridPos);
         }
         public Dictionary<Vector2Int, List<UnitInfoUI_1>> GetAllUnits()
         {

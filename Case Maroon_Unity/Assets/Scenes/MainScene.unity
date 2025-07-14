@@ -2466,8 +2466,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e3aed3303379304582644023e611b2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 20, y: 20}
-  chunkSize: {x: 20, y: 20}
+  gridSize: {x: 30, y: 30}
+  chunkSize: {x: 0, y: 0}
   cellGap: {x: 0, y: 0}
   MapOrientation: 0
   gridChunkCollider: 0

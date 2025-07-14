@@ -38,10 +38,10 @@ namespace CaseMaroon.Units
             }
         }
 
-        public Unit data;
+        public Unit unit;
         public void Initiliaze(Unit data)
         {
-            this.data = data;
+            this.unit = data;
             this.name = data.UnitName;
 
             image.sprite = data.Image;
@@ -53,8 +53,8 @@ namespace CaseMaroon.Units
 
         public void UpdateValues()
         {
-            healthPoints.text = data.HealthPoints.ToString();
-            readyPoints.text = data.EnergyPoints.ToString();
+            healthPoints.text = unit.HealthPoints.ToString();
+            readyPoints.text = unit.EnergyPoints.ToString();
         }
 
         public Vector2Int gridPosition;
@@ -163,7 +163,7 @@ namespace CaseMaroon.Units
             // hex travelled * percent Drain
             int pReduction = 30;
 
-            data.MovementPoints = data.MovementPoints - pReduction;
+            unit.MovementPoints = unit.MovementPoints - pReduction;
             ClampMove();
         }
 
@@ -189,7 +189,7 @@ namespace CaseMaroon.Units
             u2Object = u2Obj.gameObject;
 
             statItem.Label = "Move Points: ";
-            statItem.Value = data.MovementPoints.ToString();
+            statItem.Value = unit.MovementPoints.ToString();
 
             u2Obj.AddData(statItem);
 
@@ -210,7 +210,7 @@ namespace CaseMaroon.Units
 
         public void SupplyUnit(int move)
         {
-            data.MovementPoints += move;
+            unit.MovementPoints += move;
 
             ClampMove();
         }
@@ -219,13 +219,13 @@ namespace CaseMaroon.Units
         {
             // clmapo movement to 0 and 100
 
-            if (data.MovementPoints < 0)
+            if (unit.MovementPoints < 0)
             {
-                data.MovementPoints = 0;
+                unit.MovementPoints = 0;
             }
-            else if (data.MovementPoints > 100)
+            else if (unit.MovementPoints > 100)
             {
-                data.MovementPoints = 100;
+                unit.MovementPoints = 100;
             }
         }
     }

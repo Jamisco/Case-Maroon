@@ -23,7 +23,7 @@ namespace CaseMaroon.WorldMapUI
             this.unitParent = unitParent;
         }
 
-        public void SpawnUnit(Vector2Int gridPos, Unit data)
+        public void SpawnUnit(Unit data, Vector2Int gridPos)
         {
             Vector3 position = grid.GridToWorldPostion(gridPos);
             position.z += -.1f;
@@ -40,7 +40,7 @@ namespace CaseMaroon.WorldMapUI
 
             rect.position = position;
 
-            AddUnitToList(gridPos, unitUI);
+            AddUnitToList(unitUI, gridPos);
             unitUI.gridPosition = gridPos;
             data.GridPosition = gridPos;
 
@@ -50,14 +50,14 @@ namespace CaseMaroon.WorldMapUI
         public void RemoveUnit(UnitInfoUI_1 unitInfo)
         {
             Vector2Int gridPos = unitInfo.gridPosition;
-            RemoveUnitFromList(gridPos, unitInfo);
+            RemoveUnitFromList(unitInfo, gridPos);
             Object.Destroy(unitInfo.gameObject);
             StackUnits(gridPos);
         }
 
         public void RemoveUnit(Vector2Int gridPos)
         {
-            GetUnit(gridPos, out List<UnitInfoUI_1> units);
+            GetUnitInfos(gridPos, out List<UnitInfoUI_1> units);
 
             if (units == null || units.Count == 0)
             {
@@ -66,7 +66,7 @@ namespace CaseMaroon.WorldMapUI
 
             UnitInfoUI_1 unitInfo = units.Last();
 
-            RemoveUnitFromList(gridPos, unitInfo);
+            RemoveUnitFromList(unitInfo, gridPos);
             Object.Destroy(unitInfo.gameObject);
             StackUnits(gridPos);
         }
@@ -80,31 +80,40 @@ namespace CaseMaroon.WorldMapUI
 
             unitInfo.MoveToPosition_Instant(worldPos);
                 
-            RemoveUnitFromList(unitInfo.gridPosition, unitInfo);
-            AddUnitToList(newPos, unitInfo);
+            RemoveUnitFromList(unitInfo, unitInfo.gridPosition);
+            AddUnitToList(unitInfo, newPos);
 
             unitInfo.gridPosition = newPos;
 
             StackUnits(oldPos);
             StackUnits(newPos);
+
+            WorldUI.Instance.InvokeUnitPlaced(newPos, unitInfo.unit.UnitType);
+
         }
 
-        public void MoveToPosition_Animate(UnitInfoUI_1 unitInfo, List<Vector2Int> gridPositions)
+        public void MoveToPosition_Animate(Unit unit, List<Vector2Int> gridPositions)
         {
+            UnitInfoUI_1 unitInfo = null;
+
+            GetUnitInfo(unit, out unitInfo);
+
             unitInfo.MoveToPosition_Animate(gridPositions);
 
-            Vector2Int oldPos = unitInfo.gridPosition;
+            Vector2Int oldPos = unit.GridPosition;
 
-            RemoveUnitFromList(unitInfo.gridPosition, unitInfo);
-            AddUnitToList(gridPositions.Last(), unitInfo);
+            RemoveUnitFromList(unitInfo, oldPos);
+            AddUnitToList(unitInfo, gridPositions.Last());
 
-            unitInfo.gridPosition = gridPositions.Last();
+            unit.GridPosition = gridPositions.Last();
 
             StackUnits(oldPos);
-            StackUnits(unitInfo.gridPosition);
+            StackUnits(unit.GridPosition);
+
+            WorldUI.Instance.InvokeUnitPlaced(unit.GridPosition, unit.UnitType);
         }
 
-        private void AddUnitToList(Vector2Int gridPos,  UnitInfoUI_1 unit)
+        private void AddUnitToList(UnitInfoUI_1 unit, Vector2Int gridPos)
         {
             if (battleUnits.ContainsKey(gridPos))
             {
@@ -117,14 +126,14 @@ namespace CaseMaroon.WorldMapUI
             }
         }
 
-        private void RemoveUnitFromList(Vector2Int gridPos, UnitInfoUI_1 unit)
+        private void RemoveUnitFromList(UnitInfoUI_1 unit, Vector2Int gridPos)
         {
             if (battleUnits.ContainsKey(gridPos))
             {
                 battleUnits[gridPos].Remove(unit);
             }
         }
-        public bool GetUnit(Vector2Int gridPos, out List<UnitInfoUI_1> units)
+        public bool GetUnitInfos(Vector2Int gridPos, out List<UnitInfoUI_1> units)
         {
             if (battleUnits.ContainsKey(gridPos))
             {
@@ -143,6 +152,36 @@ namespace CaseMaroon.WorldMapUI
                 return false;
             }
         }
+
+        public bool GetUnitInfo(Unit unit, out UnitInfoUI_1 unitInfo)
+        {
+            Vector2Int gridPos = unit.GridPosition;
+
+            if (battleUnits.ContainsKey(unit.GridPosition))
+            {
+                if (battleUnits[gridPos].Count == 0)
+                {
+                    unitInfo = null;
+                    return false;
+                }
+
+                unitInfo = battleUnits[gridPos]
+                    .FirstOrDefault(x => unit.UnitId == x.unit.UnitId);
+
+                if(unitInfo == null)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            else
+            {
+                unitInfo = null;
+                return false;
+            }
+        }
+
         private void StackUnits(Vector2Int gridPos)
         {
             // we can furhte modify this by only stacking the most recently added unit

@@ -79,8 +79,6 @@ namespace CaseMaroon.WorldMap
             buildings[gridPos] = building;
 
             WorldUI.Instance.InvokeBuildingPlaced(gridPos, building);
-
-            BackendTester.Instance.SyncGameState();
         }
     }
 }
