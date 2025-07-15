@@ -1,5 +1,5 @@
 import {
-    ReconPosition,
+  ReconPosition,
   ReconPositionSchema,
   Vector2IntSchema,
 } from "../Miscellaneous/index.js";
@@ -21,10 +21,24 @@ export class Player {
     );
 
     if (!exists) {
+      this.ownedPositions.push(gridPos);
+      let rp = new ReconPosition(gridPos, this.reconLevel, 0);
+
+      this.addReconPosition(rp);
+    }
+  }
+
+  capturePositions(gridPositions) {
+    for (const gridPos of gridPositions) {
+      const exists = this.ownedPositions.some(
+        (pos) => pos.x === gridPos.x && pos.y === gridPos.y
+      );
+
+      if (!exists) {
         this.ownedPositions.push(gridPos);
         let rp = new ReconPosition(gridPos, this.reconLevel, 0);
-        
         this.addReconPosition(rp);
+      }
     }
   }
 
@@ -39,6 +53,12 @@ export class Player {
 
   _findOwnedIndex(gridPosition) {
     return this.ownedPositions.findIndex(
+      (pos) => pos.x === gridPosition.x && pos.y === gridPosition.y
+    );
+  }
+
+  ownsHex(gridPosition) {
+    return this.ownedPositions.some(
       (pos) => pos.x === gridPosition.x && pos.y === gridPosition.y
     );
   }

@@ -25,6 +25,7 @@ namespace CaseMaroon.GameSystem
         public GameManager Instance { get; private set; }
         public MessageManager messageManager;
 
+        public float messageDelay = .5f;
         public bool StartSequence = false;
         public enum InitMessage { Welcome, SpawnHQ, PlaceUnits}
         public enum InitGameState
@@ -153,7 +154,7 @@ namespace CaseMaroon.GameSystem
         }
         private IEnumerator StartGameSequenceCoroutine()
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(messageDelay);
 
             MessageData welcomeMsg = messageManager.GetMessage(InitMessage.Welcome.ToString());
 
@@ -165,7 +166,7 @@ namespace CaseMaroon.GameSystem
             ///////////////////////////////        
 
             // Wait a short delay
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(messageDelay);
 
             MessageData spawnHq = messageManager.GetMessage(InitMessage.SpawnHQ.ToString());
             // Show box 2

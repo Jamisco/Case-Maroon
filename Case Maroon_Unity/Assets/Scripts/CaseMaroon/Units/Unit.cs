@@ -59,6 +59,13 @@ namespace CaseMaroon.Units
             EnergyPoints = other.EnergyPoints;
             MovementPoints = other.MovementPoints;
         }
+
+        private static int idLink = 111;
+        public virtual void CreateUniqueId()
+        {
+            UnitId = idLink;
+            idLink += 111;
+        }
     }
 
 

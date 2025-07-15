@@ -196,7 +196,8 @@ export function gameRoutes(gameState) {
   });
 
   router.get("/GetBiome", (req, res) => {
-    console.log("Received GetBiome Request:", req.query);
+    
+    console.log("Received GetBiome Request");
 
     const x = parseInt(req.query.x, 10);
     const y = parseInt(req.query.y, 10);
@@ -211,7 +212,7 @@ export function gameRoutes(gameState) {
     try {
       const biome = worldMap.getBiomeData(x, y);
 
-      console.log("Biome is:", JSON.stringify(biome.toJSON(), null, 2));
+      // console.log("Biome is:", JSON.stringify(biome.toJSON(), null, 2));
 
       if (!biome) {
         return res.status(404).json({

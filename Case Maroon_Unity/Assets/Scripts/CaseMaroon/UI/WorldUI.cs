@@ -254,7 +254,7 @@ namespace CaseMaroon.WorldMapUI
             // if a unit was already selected, move it to the new position
             if (SelectedUnit != null)
             {
-                if(gridPos == SelectedUnit.gridPosition)
+                if(gridPos == SelectedUnit.GridPosition)
                 {
                     // if the user clicks on the selected unit again, deselect it
                     DeselectCurrentUnit();
@@ -284,7 +284,7 @@ namespace CaseMaroon.WorldMapUI
                 SelectedUnit = unit;
                 SelectedUnit.EnableOutline();
 
-                MoveablePositions = GetUnitReachablePositions(SelectedUnit.unit, SelectedUnit.gridPosition);
+                MoveablePositions = GetUnitReachablePositions(SelectedUnit.unit, SelectedUnit.GridPosition);
 
                 MoveablePositions = MoveablePositions.OrderBy(x => x.x).ToList();
 
@@ -339,7 +339,68 @@ namespace CaseMaroon.WorldMapUI
         }
         public void GetMoveablePositions(UnitInfoUI_1 unit, out List<Vector2Int> moveablePositions)
         {
-            moveablePositions = HexFunctions.GetSurroundingTiles(unit.gridPosition, 2);
+            moveablePositions = HexFunctions.GetSurroundingTiles(unit.GridPosition, 2);
+        }
+
+        // This method uses a priority queue
+        private List<Vector2Int> GetUnitReachablePositions2(Unit data, Vector2Int curPos)
+        {
+            int maxMovement = data.MovementPoints;
+
+            // Stores the best cost to reach each position
+            Dictionary<Vector2Int, int> visited = new Dictionary<Vector2Int, int>();
+
+            // Priority queue: SortedSet with custom comparer for (cost, position)
+            // SortedSet automatically sorts by cost ascending
+            var comparer = Comparer<(int cost, Vector2Int pos)>.Create((a, b) =>
+            {
+                int comp = a.cost.CompareTo(b.cost);
+                if (comp == 0)
+                    comp = a.pos.GetHashCode().CompareTo(b.pos.GetHashCode());
+                return comp;
+            });
+
+            SortedSet<(int cost, Vector2Int pos)> priorityQueue = new SortedSet<(int, Vector2Int)>(comparer);
+
+            priorityQueue.Add((0, curPos));
+            visited[curPos] = 0;
+
+            while (priorityQueue.Count > 0)
+            {
+                // Extract position with lowest cost
+                var current = priorityQueue.Min;
+                priorityQueue.Remove(current);
+
+                Vector2Int currentPos = current.pos;
+                int costSoFar = current.cost;
+
+                foreach (Vector2Int neighbor in worldMap.GetSurroudingPositions(currentPos))
+                {
+                    BiomeData biome = worldMap.GetBiomeData(neighbor);
+                    MovementType mt = data.MovementType;
+
+                    int moveCost = biome.GetMovementCost(mt);
+
+                    if (moveCost < 0 || moveCost == int.MaxValue)
+                        continue; // impassable
+
+                    int newCost = costSoFar + moveCost;
+
+                    if (newCost <= maxMovement && (!visited.ContainsKey(neighbor) || newCost < visited[neighbor]))
+                    {
+                        // If neighbor was visited before with higher cost, remove old entry from priority queue
+                        if (visited.ContainsKey(neighbor))
+                        {
+                            priorityQueue.Remove((visited[neighbor], neighbor));
+                        }
+
+                        visited[neighbor] = newCost;
+                        priorityQueue.Add((newCost, neighbor));
+                    }
+                }
+            }
+
+            return visited.Keys.ToList();
         }
 
         private List<Vector2Int> GetUnitReachablePositions(Unit data, Vector2Int curPos)

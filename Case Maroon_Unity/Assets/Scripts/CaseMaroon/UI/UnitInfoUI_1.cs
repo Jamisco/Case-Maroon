@@ -26,6 +26,20 @@ namespace CaseMaroon.Units
         [SerializeField]
         private GameObject QuestionMark;
 
+        public Unit unit;
+
+        public Vector2Int GridPosition
+        {
+            get
+            {
+                return unit.GridPosition;
+            }
+            set
+            {
+                unit.GridPosition = value;
+            }
+        }
+
         public bool EnableQuestionMark
         {
             get
@@ -38,7 +52,6 @@ namespace CaseMaroon.Units
             }
         }
 
-        public Unit unit;
         public void Initiliaze(Unit data)
         {
             this.unit = data;
@@ -56,8 +69,6 @@ namespace CaseMaroon.Units
             healthPoints.text = unit.HealthPoints.ToString();
             readyPoints.text = unit.EnergyPoints.ToString();
         }
-
-        public Vector2Int gridPosition;
 
         public void MoveToPosition_Instant(Vector3 worldPos)
         {

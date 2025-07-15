@@ -41,7 +41,7 @@ namespace CaseMaroon.WorldMapUI
             rect.position = position;
 
             AddUnitToList(unitUI, gridPos);
-            unitUI.gridPosition = gridPos;
+            unitUI.GridPosition = gridPos;
             data.GridPosition = gridPos;
 
             WorldUI.Instance.InvokeUnitPlaced(gridPos, data.UnitType);
@@ -49,7 +49,7 @@ namespace CaseMaroon.WorldMapUI
 
         public void RemoveUnit(UnitInfoUI_1 unitInfo)
         {
-            Vector2Int gridPos = unitInfo.gridPosition;
+            Vector2Int gridPos = unitInfo.GridPosition;
             RemoveUnitFromList(unitInfo, gridPos);
             Object.Destroy(unitInfo.gameObject);
             StackUnits(gridPos);
@@ -74,16 +74,16 @@ namespace CaseMaroon.WorldMapUI
 
         public void MoveToPosition_Instant(UnitInfoUI_1 unitInfo, Vector2Int newPos)
         {
-            Vector3 worldPos = grid.GridToWorldPostion(unitInfo.gridPosition);
+            Vector3 worldPos = grid.GridToWorldPostion(unitInfo.GridPosition);
 
-            Vector2Int oldPos = unitInfo.gridPosition;
+            Vector2Int oldPos = unitInfo.GridPosition;
 
             unitInfo.MoveToPosition_Instant(worldPos);
                 
-            RemoveUnitFromList(unitInfo, unitInfo.gridPosition);
+            RemoveUnitFromList(unitInfo, unitInfo.GridPosition);
             AddUnitToList(unitInfo, newPos);
 
-            unitInfo.gridPosition = newPos;
+            unitInfo.GridPosition = newPos;
 
             StackUnits(oldPos);
             StackUnits(newPos);
@@ -94,6 +94,7 @@ namespace CaseMaroon.WorldMapUI
 
         public void MoveToPosition_Animate(Unit unit, List<Vector2Int> gridPositions)
         {
+            // the problem with these move units is that UnitInfo UI holds a unit object, however said object is not thesame reference as the unit object that is passed into this method
             UnitInfoUI_1 unitInfo = null;
 
             GetUnitInfo(unit, out unitInfo);
@@ -103,9 +104,12 @@ namespace CaseMaroon.WorldMapUI
             Vector2Int oldPos = unit.GridPosition;
 
             RemoveUnitFromList(unitInfo, oldPos);
+            unitInfo.unit.GridPosition = gridPositions.Last();
+
+            // i dont think we need this just in case.
+            //unit.GridPosition = gridPositions.Last();
             AddUnitToList(unitInfo, gridPositions.Last());
 
-            unit.GridPosition = gridPositions.Last();
 
             StackUnits(oldPos);
             StackUnits(unit.GridPosition);

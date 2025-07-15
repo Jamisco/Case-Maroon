@@ -1,4 +1,5 @@
 ﻿using CaseMaroon.Backend;
+using CaseMaroon.GameSystem;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static CaseMaroon.Miscellaneous.GlobalData;
 using static CaseMaroon.WorldMap.BiomeData;
 
 namespace CaseMaroon.WorldMapUI
@@ -145,11 +147,31 @@ namespace CaseMaroon.WorldMapUI
 
             List<StatItemCard> stats = biomeData.CreateList_Sync(startCardPrefab, data);
 
+            StatItemCard owned = Object.Instantiate(startCardPrefab);
+
+            owned.Label = "Hex Owned: ";
+            owned.Value = GameState.Instance.MainPlayer.OwnedPositions.Contains(recent).ToString();
+
+            StatItemCard recon = Object.Instantiate(startCardPrefab);
+
+            ReconPosition rp = new ReconPosition(recent);
+
+            GameState.Instance.MainPlayer.ReconPositions.TryGetValue(rp, out rp);
+
+            recon.Label = "Recon: ";
+            recon.Value = rp.ReconLevel.ToString();
+
             foreach (StatItemCard stat in stats)
             {
                 stat.gameObject.SetActive(true);
                 stat.transform.SetParent(hexStatsParent.transform, false);
             }
+
+            owned.gameObject.SetActive(true);
+            owned.transform.SetParent(hexStatsParent.transform, false);
+
+            recon.gameObject.SetActive(true);
+            recon.transform.SetParent(hexStatsParent.transform, false);
         }
 
         public void ClearBuildings()

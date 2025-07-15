@@ -117,6 +117,8 @@ namespace CaseMaroon.WorldMap
 
                 Unit ud = DefaultUnitData.CreateDefaultUnit((UnitType)cur.UnitType, img);
 
+                ud.CreateUniqueId();
+
                 BackendTester.Instance.SpawnUnit(gridPos, ud);
             }
 

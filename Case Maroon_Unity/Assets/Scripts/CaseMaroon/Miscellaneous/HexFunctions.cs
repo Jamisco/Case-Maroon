@@ -59,7 +59,7 @@ namespace CaseMaroon.Miscellaneous
 
         public static List<Vector2Int> GetSurroundingTiles(Vector2Int initialPosition, int distance = 1)
         {
-            int[] loopOrder = new int[] { 1, 3, 4, 5, 6, 1, 2 };
+            int[] loopOrder = new int[] { 1, 3, 4, 5, 6, 1};
 
             List<Vector2Int> surroundingTiles = new List<Vector2Int>();
 
@@ -77,17 +77,14 @@ namespace CaseMaroon.Miscellaneous
             {
                 for (int s = 0; s < loopOrder.Length; s++)
                 {
-                    for (int i = 1; i <= counter; i++)
+                    currentPos = GetNeighbor(currentPos, loopOrder[s]);
+
+                    surroundingTiles.Add(currentPos);
+
+                    // if distance > 1, we prime the next outer perimeter
+                    if (s == 0)
                     {
-                        currentPos = GetNeighbor(currentPos, loopOrder[s]);
-
-                        surroundingTiles.Add(currentPos);
-
-                        if (s == 0)
-                        {
-                            startPos = currentPos;
-                            break;
-                        }
+                        startPos = currentPos;
                     }
                 }
 

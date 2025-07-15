@@ -7,6 +7,15 @@ export class ReconPosition {
   /**
    * @param {{ gridPosition: {x: number, y: number}, reconLevel: number }} data
    */
+
+  //Recon levels
+    // 0 - Can see nothing - Fog
+    // 1 - Can see Biome/Hex - Friend/Foe/Neutral
+    // 2 - Can see Unit outline
+    // 3 - Can see Unit Stats(with x accuracy)
+    // 4 - Can see Unit Stats(with x++ accuracy)
+    // 5 - Can see Unit Stats(with full accuracy)
+  
   constructor(gridPosition, unitRecon = 0, buildingRecon = 0) {
     this.gridPosition = gridPosition;
     this.unitRecon = unitRecon;

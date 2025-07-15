@@ -1,7 +1,7 @@
 // models/GameState.js
 
 import { Player } from "./Player.js";
-import { ReconPosition } from "../Miscellaneous/index.js";
+import { HexFunctions, ReconPosition } from "../Miscellaneous/index.js";
 import { MapConfig } from "../WorldMap/MapConfig.js";
 import { Building } from "../Buildings/index.js";
 import { Unit } from "../Units/index.js";
@@ -14,14 +14,22 @@ export class GameState {
     this.buildings = [];
     this.units = [];
     this.worldMap = null;
+    this.initState = false;
   }
 
   initGame(worldMap) {
+    
     this.players = [];
+    this.buildings = [];
+    this.units = [];
+    this.initState = true;
+    
     this.worldMap = worldMap;
 
     let np = new Player();
     let positions = [];
+
+
     console.log(worldMap.gridSize);
 
     let gridSize = worldMap.gridSize;
@@ -59,6 +67,21 @@ export class GameState {
     );
 
     if (!exists) {
+      let curPlayer = this.players[0];
+
+      // in the initial game state, we will allow the building to be placed, in a neutral position on player's side of the map.
+      // if not, buildings can only be placed in owned positions
+      if (!this.initState) {
+        // if we are not in the initial state, the hex must be owned
+
+        let oh = curPlayer.ownsHex(building.gridPosition);
+
+        // if the player does not own the hex, the player cannot place a building there
+        if (!oh) {
+          return false;
+        }
+      }
+
       this.buildings.push(building);
 
       const gp = building.gridPosition;
@@ -67,6 +90,15 @@ export class GameState {
       const br = Building.reconLevel;
 
       this.updateVisionAround(gp, distance, ur, br);
+
+      if (this.initState) {
+        // in the initial state of the game, capture all hexes in the reconscope of the building
+
+        let positions = HexFunctions.getSurroundingTiles(gp, distance);
+        curPlayer.capturePositions(positions);
+
+        this.initState = false;
+      }
 
       return true;
     }
@@ -81,6 +113,13 @@ export class GameState {
     );
 
     if (!exists) {
+      // make sure user owns hex
+      let curPlayer = this.players[0];
+
+      if (!curPlayer.ownsHex(gridPos)) {
+        return false;
+      }
+
       this.units.push(unit);
       unit.gridPosition = gridPos;
 
@@ -98,7 +137,6 @@ export class GameState {
   }
 
   moveUnit(unit, toPos) {
-    
     // Find the unit by unique identifier or coordinates
     const existingUnit = this.units.find((u) => u.id === unit.id);
 
@@ -125,7 +163,7 @@ export class GameState {
       Unit.reconLevel,
       0
     );
-    
+
     const player = this.players[0];
     player.removeReconPositions(oldRecon);
 
@@ -139,7 +177,7 @@ export class GameState {
       Unit.reconLevel,
       0
     );
-    
+
     player.addReconPositions(newRecon);
     player.capturePosition(toPos);
 
