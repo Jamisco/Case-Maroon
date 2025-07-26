@@ -168,7 +168,7 @@ namespace CaseMaroon.WorldMap
                     // if u come back here, the reason the hex go back to red is because although they were initial non-red, that was because a unit was next to them and their recon levels where higher, when said unit moves away, the recon level drops and they become red again.
                     if (!mp.OwnedPositions.Contains(pos.gridPosition))
                     {
-                        enemyMeshFuser.InsertPosition(pos.gridPosition, enemyOverlayColor);
+                        enemyMeshFuser.InsertPosition(pos.gridPosition, neutralOverlayColor);
                     }
                 }
             }

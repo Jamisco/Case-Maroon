@@ -136,50 +136,41 @@ export class GameState {
     return false;
   }
 
-  moveUnit(unit, toPos) {
-    // Find the unit by unique identifier or coordinates
-    const existingUnit = this.units.find((u) => u.id === unit.id);
+  moveUnit(unit, path) {
+    
+    if (!Array.isArray(path) || path.length === 0) {
+      console.error("Path is invalid or empty.");
+      return false;
+    }
 
-    if (!existingUnit) {
+    // Find the unit by unique identifier
+    const existingUnit = this.units.find((u) => u.id === unit.id);
+    
+    if (!existingUnit)
+    {
       console.error("No matching unit found on server.");
       return false;
     }
 
-    // Optional: prevent stacking units at destination
-    // const exists = this.units.some(
-    //   (u) => u.gridPosition.x === toPos.x && u.gridPosition.y === toPos.y
-    // );
-    // if (exists) {
-    //   console.error("A unit already exists at the target position.");
-    //   return false;
-    // }
-
-    const fromPos = existingUnit.gridPosition;
-
-    // Remove vision from old position
-    const oldRecon = ReconPosition.createReconPosition(
-      fromPos,
-      Unit.reconScope,
-      Unit.reconLevel,
-      0
-    );
-
+    const toPos = path[path.length - 1];
     const player = this.players[0];
-    player.removeReconPositions(oldRecon);
 
+    // Capture all tiles within recon range along path
+    for (const pos of path) {
+      const recon = ReconPosition.createReconPosition(
+        pos,
+        Unit.reconScope,
+        Unit.reconLevel,
+        0
+      );
+
+      for (const reconPos of recon) {
+        player.capturePosition(reconPos.gridPosition);
+      }
+    }
+    
     // Move unit
     existingUnit.gridPosition = toPos;
-
-    // Add vision at new position
-    const newRecon = ReconPosition.createReconPosition(
-      toPos,
-      Unit.reconScope,
-      Unit.reconLevel,
-      0
-    );
-
-    player.addReconPositions(newRecon);
-    player.capturePosition(toPos);
 
     return true;
   }

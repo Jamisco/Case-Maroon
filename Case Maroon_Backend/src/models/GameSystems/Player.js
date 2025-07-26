@@ -7,7 +7,7 @@ import {
 export class Player {
   static nextId = 1;
   static reconScope = 3;
-  static reconLevel = 1;
+  static reconLevel = 2;
 
   constructor() {
     this.id = Player.nextId++;
@@ -22,7 +22,7 @@ export class Player {
 
     if (!exists) {
       this.ownedPositions.push(gridPos);
-      let rp = new ReconPosition(gridPos, this.reconLevel, 0);
+      let rp = new ReconPosition(gridPos, Player.reconLevel, 0);
 
       this.addReconPosition(rp);
     }
@@ -36,7 +36,7 @@ export class Player {
 
       if (!exists) {
         this.ownedPositions.push(gridPos);
-        let rp = new ReconPosition(gridPos, this.reconLevel, 0);
+        let rp = new ReconPosition(gridPos, Player.reconLevel, 0);
         this.addReconPosition(rp);
       }
     }

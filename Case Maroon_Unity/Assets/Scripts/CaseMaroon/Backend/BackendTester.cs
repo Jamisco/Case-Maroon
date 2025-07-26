@@ -5,8 +5,10 @@ using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Timers;
 using UnityEngine;
@@ -173,9 +175,9 @@ namespace CaseMaroon.Backend
         {
             StartCoroutine(SpawnUnit_Post(gridPos, data));
         }
-        public void MoveUnit(Unit unit, Vector2Int gridPos)
+        public void MoveUnit(Unit unit, List<Vector2Int> path)
         {
-            StartCoroutine(MoveUnit_Post(unit, gridPos));
+            StartCoroutine(MoveUnit_Post(unit, path));
         }
         public void SpawnBuilding(Building building)
         {
@@ -290,7 +292,7 @@ namespace CaseMaroon.Backend
 
         private IEnumerator SpawnUnit_Post(Vector2Int gridPos, Unit data)
         {
-            UnitActionPayload payload = new UnitActionPayload(gridPos, data);
+            SpawnUnitPayload payload = new SpawnUnitPayload(gridPos, data);
 
             string json = JsonUtility.ToJson(payload, true);
 
@@ -306,9 +308,9 @@ namespace CaseMaroon.Backend
                 }
             });
         }
-        private IEnumerator MoveUnit_Post(Unit data, Vector2Int gridPos)
+        private IEnumerator MoveUnit_Post(Unit data, List<Vector2Int> path)
         {
-            UnitActionPayload payload = new UnitActionPayload(gridPos, data);
+            MoveUnitPayload payload = new MoveUnitPayload(data, path);
 
             string json = JsonUtility.ToJson(payload, true);
 
@@ -316,7 +318,8 @@ namespace CaseMaroon.Backend
             {
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    WorldUI.Instance.MoveSelectedUnit(data, gridPos);
+                    WorldUI.Instance.MoveSelectedUnit(data, 
+                        path);
                 }
                 else
                 {
@@ -324,8 +327,6 @@ namespace CaseMaroon.Backend
                 }
             });
         }
-
-
 
         private IEnumerator PlaceBuilding_Post(Building building)
         {

@@ -4,27 +4,23 @@ import Ajv from "ajv";
 import { Vector2, Vector3 } from "js-vectors";
 import { Vector2IntSchema } from "../models/Miscellaneous/Vectors.schema.js";
 
-import { UnitSchema } from "../models/Units/Unit.schema.js";
-
 import { buildingSchema } from "../models/Buildings/Building.schema.js";
 
 import { MapConfigSchema } from "../models/WorldMap/MapConfig.schema.js";
 
 import { Worldmap } from "../models//WorldMap/Worldmap.js";
 
-import { HexFunctions, ReconPosition } from "../models/Miscellaneous/index.js";
-
-import { Building } from "../models/Buildings/index.js";
+import {
+  validateMoveUnit,
+  validateSpawnUnit,
+} from "../models/Miscellaneous/index.js";
 
 let worldMap = null;
 
 const ajv = new Ajv();
 
-const unitValidator = ajv.compile(UnitSchema);
-const validateBuilding = ajv.compile(buildingSchema);
 const mapValidator = ajv.compile(MapConfigSchema);
-
-const v2IntValidator = ajv.compile(Vector2IntSchema);
+const validateBuilding = ajv.compile(buildingSchema);
 
 export function gameRoutes(gameState) {
   const router = express.Router();
@@ -62,18 +58,13 @@ export function gameRoutes(gameState) {
 
     console.log("Received spawn unit request:", data.gridPosition);
 
-    if (!unitValidator(data.unit)) {
-      console.error(unitValidator.errors);
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid unit schema" });
-    }
-
-    if (!v2IntValidator(data.gridPosition)) {
-      console.error(unitValidator.errors);
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Vector schema" });
+    if (!validateSpawnUnit(data)) {
+      console.error(validateSpawnUnit.errors);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid spawn unit payload",
+        errors: validateSpawnUnit.errors,
+      });
     }
 
     try {
@@ -95,21 +86,24 @@ export function gameRoutes(gameState) {
   });
 
   router.post("/moveunit", (req, res) => {
-    
-    const { gridPosition, unit } = req.body;
+    const data = req.body;
 
-    console.log("Received move unit request:", gridPosition);
-    
-    
-    if (!v2IntValidator(gridPosition) || !unitValidator(unit)) {
+    console.log(
+      "Received move unit request:",
+      data.path?.[data.path.length - 1]
+    );
+
+    if (!validateMoveUnit(data)) {
+      console.error(validateMoveUnit.errors);
       return res.status(400).json({
         success: false,
-        message: "Invalid unit or vector format",
+        message: "Invalid move unit payload",
+        errors: validateMoveUnit.errors,
       });
     }
 
     try {
-      if (gameState.moveUnit(unit, gridPosition)) {
+      if (gameState.moveUnit(data.unit, data.path)) {
         return res.status(200).json({
           success: true,
           message: "Unit moved successfully",
@@ -196,7 +190,6 @@ export function gameRoutes(gameState) {
   });
 
   router.get("/GetBiome", (req, res) => {
-    
     console.log("Received GetBiome Request");
 
     const x = parseInt(req.query.x, 10);

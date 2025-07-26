@@ -261,7 +261,9 @@ namespace CaseMaroon.WorldMapUI
                 }
                 else
                 {
-                    BackendTester.Instance.MoveUnit(SelectedUnit.unit, gridPos);
+                    List<Vector2Int> path = GetFastestPath(SelectedUnit.unit, SelectedUnit.unit.GridPosition, gridPos);
+
+                    BackendTester.Instance.MoveUnit(SelectedUnit.unit, path);
                 }
             }
             else
@@ -303,22 +305,20 @@ namespace CaseMaroon.WorldMapUI
             return unitUIHelper.GetUnitInfos(gridPos, out unit);
         }
 
-        public void MoveSelectedUnit(Unit unit, Vector2Int gridPos)
+        public void MoveSelectedUnit(Unit unit, List<Vector2Int> path)
         {
             // cannot move unit to its current position
-            if (unit == null || gridPos == unit.GridPosition)
+            if (unit == null || path.Last() == unit.GridPosition)
             {
                 return;
             }
 
             // check if the position is valid, if not, deselect the unit
-            if (MoveablePositions.Contains(gridPos) == false)
+            if (MoveablePositions.Contains(path.Last()) == false)
             {
                 DeselectCurrentUnit();
                 return;
             }
-
-            List<Vector2Int> path = GetFastestPath(unit, unit.GridPosition, gridPos);
 
             unitUIHelper.MoveToPosition_Animate(unit, path);
             DeselectCurrentUnit();

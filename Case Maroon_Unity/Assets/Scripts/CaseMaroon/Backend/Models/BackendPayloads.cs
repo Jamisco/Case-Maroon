@@ -12,15 +12,27 @@ namespace CaseMaroon.Backend
     public class BackendPayloads
     {
         [Serializable]
-        public struct UnitActionPayload
+        public struct SpawnUnitPayload
         {
             public Vector2Int gridPosition;
             public UnitDataWrap unit;
 
-            public UnitActionPayload(Vector2Int pos, Unit data)
+            public SpawnUnitPayload(Vector2Int pos, Unit data)
             {
                 gridPosition = pos;
                 unit = new UnitDataWrap(data);
+            }
+        }
+
+        public struct MoveUnitPayload
+        {
+            public UnitDataWrap unit;
+            public List<Vector2Int> path;
+
+            public MoveUnitPayload(Unit data, List<Vector2Int> path)
+            {
+                unit = new UnitDataWrap(data);
+                this.path = path;
             }
         }
 
