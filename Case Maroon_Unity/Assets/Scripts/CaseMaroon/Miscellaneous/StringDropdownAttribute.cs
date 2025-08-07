@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
-using static CaseMaroon.GameSystem.GameManager;
+using static CaseMaroon.GameSystem.PlayerStateManager;
 
 namespace CaseMaroon.Miscellaneous
 {

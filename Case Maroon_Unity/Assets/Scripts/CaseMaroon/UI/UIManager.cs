@@ -1,4 +1,5 @@
-﻿using CaseMaroon.Units;
+﻿using CaseMaroon.GameSystem;
+using CaseMaroon.Units;
 using UnityEngine;
 
 namespace CaseMaroon.WorldMapUI
@@ -13,5 +14,6 @@ namespace CaseMaroon.WorldMapUI
         public BuildingItemCard buildingItemCard;
         public UnitItemCard unitItemCard;
         public MessageBox messageBox;
+
     }
 }

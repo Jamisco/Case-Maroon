@@ -18,7 +18,6 @@ namespace CaseMaroon.WorldMap
 
         public Dictionary<Vector2Int, Building> buildings = new Dictionary<Vector2Int, Building>();
 
- 
 
         private void Awake()
         {

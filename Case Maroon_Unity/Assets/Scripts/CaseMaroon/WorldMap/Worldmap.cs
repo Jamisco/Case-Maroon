@@ -79,8 +79,6 @@ namespace CaseMaroon.WorldMap
             {
                 Init();
 
-                BackendTester.Instance.UploadMapConfig(this);
-
                 //GenerateGrid();
             }
             catch (System.Exception ex)

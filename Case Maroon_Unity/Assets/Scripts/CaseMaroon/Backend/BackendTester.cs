@@ -14,12 +14,18 @@ using System.Timers;
 using UnityEngine;
 using UnityEngine.Networking;
 using static CaseMaroon.Backend.BackendPayloads;
+using static CaseMaroon.Backend.BackendRequests;
 using static CaseMaroon.Backend.BackendResponses;
 using Debug = UnityEngine.Debug;
 
 namespace CaseMaroon.Backend
 {
     public delegate void GameStateSyncedHandler(GameStateResponse gsr);
+
+    public delegate void PingResponseHandler(bool status);
+
+    public delegate void LoginResponseHandler(bool status, LoginResponse loginResponse);
+
 
     public class BackendTester : MonoBehaviour
     {
@@ -28,6 +34,14 @@ namespace CaseMaroon.Backend
         public bool USELOCALBACKEND = false;
 
         public event GameStateSyncedHandler GameStateSynced;
+        public event PingResponseHandler OnPingResponse;
+        public event LoginResponseHandler OnLoginResponse;
+
+        public Action<bool, QueueJoinResponse> OnQueueJoined;
+
+        public Action<QueueStatusResponse> OnQueueStatusChecked;
+        public Action<bool> OnQueueLeft;
+        public Action<bool> OnLoggedOut;
 
         private void Awake()
         {
@@ -121,8 +135,8 @@ namespace CaseMaroon.Backend
             {
                 if (nodeBuffer.Length > 0)
                 {
-                    Debug.Log(nodeBuffer.ToString());
-                    nodeBuffer.Clear();
+                    //Debug.Log(nodeBuffer.ToString());
+                    //nodeBuffer.Clear();
                     // Reset the timer interval
                     stdoutFlushTimer.Interval = flushInterval;
                 }
@@ -201,7 +215,6 @@ namespace CaseMaroon.Backend
         {
             StartCoroutine(GetGameState_Get());
         }
-
         private IEnumerator GenerateGrid_Post(Worldmap worldMap)
         {
             string url = BASE_URL + "GenerateGrid";
@@ -232,8 +245,8 @@ namespace CaseMaroon.Backend
                     {
                         string grid = worldMap.gridManager.GridSize.x + "  x " + worldMap.gridManager.GridSize.y;
 
-                        Debug.Log($"Hash Match! " +
-                            $"Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}%");
+                        //Debug.Log($"Hash Match! " +
+                        //    $"Local: {clientHash}, Server: {serverHash}, Difference: {percentDifference}%");
 
                         Worldmap.Instance.GenerateGrid();
                     }
@@ -248,7 +261,7 @@ namespace CaseMaroon.Backend
                 }
             });
         }
-        private IEnumerator SendPostRequest(string endpoint, string json, System.Action<UnityWebRequest> onComplete)
+        private IEnumerator SendPostRequest(string endpoint, string json, Action<UnityWebRequest> onComplete)
         {
             string url = BASE_URL + endpoint;
 
@@ -259,18 +272,34 @@ namespace CaseMaroon.Backend
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
 
+            // ✅ Add token if available
+            if (!string.IsNullOrEmpty(AuthManager.Token))
+            {
+                request.SetRequestHeader("Authorization", "Bearer " + AuthManager.Token);
+            }
+
             yield return request.SendWebRequest();
 
             onComplete?.Invoke(request);
         }
-
-        private IEnumerator SendGetRequest(string endpoint, string queryString, System.Action<UnityWebRequest> onComplete)
+        private IEnumerator SendGetRequest(string endpoint, string queryString, Action<UnityWebRequest> onComplete)
         {
-            string url = BASE_URL + endpoint + "?" + queryString;
+            string url = BASE_URL + endpoint;
+
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                url += "?" + queryString;
+            }
 
             using UnityWebRequest request = UnityWebRequest.Get(url);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
+
+            // ✅ Add token if available
+            if (!string.IsNullOrEmpty(AuthManager.Token))
+            {
+                request.SetRequestHeader("Authorization", "Bearer " + AuthManager.Token);
+            }
 
             yield return request.SendWebRequest();
 
@@ -327,7 +356,6 @@ namespace CaseMaroon.Backend
                 }
             });
         }
-
         private IEnumerator PlaceBuilding_Post(Building building)
         {
             string url = BASE_URL + "placebuilding";
@@ -392,6 +420,147 @@ namespace CaseMaroon.Backend
                     Debug.LogError("Error fetching game state: " + request.error);
                 }
             });
+        }
+        public void PingServer()
+        {
+            StartCoroutine(PingServer_Get());
+        }
+        private IEnumerator PingServer_Get()
+        {
+            yield return SendGetRequest("ping", "", (request) =>
+            {
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    OnPingResponse?.Invoke(true);
+                }
+                else
+                {
+                    OnPingResponse?.Invoke(false);
+                }
+            });
+        }
+        public void Login(string username)
+        {
+            StartCoroutine(Login_Post(username));
+        }
+        private IEnumerator Login_Post(string username)
+        {
+            var loginPayload = new UsernameReq { username = username };
+
+            string json = JsonUtility.ToJson(loginPayload);
+
+            yield return SendPostRequest("auth/login", json, (request) =>
+            {
+                var responseJson = request.downloadHandler.text;
+
+                LoginResponse response = JsonUtility.FromJson<LoginResponse>(responseJson);
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    if (response.success)
+                    {
+                        //Debug.Log("Login successful. Token: " + response.token);
+                        OnLoginResponse?.Invoke(true, response);
+                    }
+                    else
+                    {
+                        OnLoginResponse?.Invoke(false, response);
+                    }
+                }
+                else
+                {
+                    OnLoginResponse?.Invoke(false, response);
+                }
+            });
+        }
+
+        public void Logout(string username)
+        {
+            StartCoroutine(SendLogoutRequest(username));
+        }
+
+        private IEnumerator SendLogoutRequest(string username)
+        {
+            var json = JsonUtility.ToJson(new UsernameReq { username = username });
+
+            yield return SendPostRequest("auth/logout", json, (request) =>
+            {
+                var responseJson = request.downloadHandler.text;
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Debug.Log(request.downloadHandler.text);
+                    OnLoggedOut?.Invoke(true);
+                }
+                else
+                {
+                    Debug.LogError(request.downloadHandler.text);
+                    OnLoggedOut?.Invoke(false);
+                }
+            });
+        }
+
+        public void JoinQueue()
+        {
+            StartCoroutine(JoinQueue_Post());
+        }
+        private IEnumerator JoinQueue_Post()
+        {
+            yield return SendPostRequest("auth/queue/join", "{}", (request) =>
+            {
+                QueueJoinResponse response = JsonUtility.FromJson<QueueJoinResponse>(request.downloadHandler.text);
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    OnQueueJoined?.Invoke(response.success, response);
+                }
+                else
+                {
+                    Debug.LogError("Queue join failed: " + request.error);
+                    OnQueueJoined?.Invoke(false, response);
+                }
+            });
+        }
+
+        public void LeaveQueue()
+        {
+            StartCoroutine(LeaveQueue_Post());
+        }
+        private IEnumerator LeaveQueue_Post()
+        {
+            yield return SendPostRequest("auth/queue/leave", "{}", (request) =>
+            {
+                OnQueueLeft?.Invoke(request.result == UnityWebRequest.Result.Success);
+            });
+        }
+
+        private Coroutine queueStatus;
+        public void PollQueueStatus()
+        {
+           queueStatus = StartCoroutine(CheckQueueStatus());
+        }
+
+        public void StopPollingQueueStatus()
+        {
+            StopCoroutine(queueStatus);
+        }
+
+        private IEnumerator CheckQueueStatus()
+        {
+            while (true)
+            {
+                yield return SendGetRequest("auth/queue/status", "", (request) =>
+                {
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        var response = JsonUtility.FromJson<QueueStatusResponse>(request.downloadHandler.text);
+                        OnQueueStatusChecked?.Invoke(response);
+                    }
+                });
+
+                // Wait 2 seconds before next poll
+                yield return new WaitForSeconds(2f); 
+            }
         }
     }
 }

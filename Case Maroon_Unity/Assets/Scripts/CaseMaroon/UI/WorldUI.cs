@@ -94,9 +94,6 @@ namespace CaseMaroon.WorldMapUI
             Instance = this;
             DontDestroyOnLoad(gameObject); // Optional, if persistent
 
-            worldMap = Worldmap.Instance;
-
-            worldMap.OnWorldGenerated += OnWorldGenerated;
             InputStateChanged += OnInputStateChanged;
 
             InputStateChanged?.Invoke(new InputContext
@@ -107,13 +104,11 @@ namespace CaseMaroon.WorldMapUI
             });
         }
 
-        private void OnInputStateChanged(InputContext inputContext)
-        {
-            WorldInputContext = inputContext;
-        }
-
         private void Start()
         {
+            worldMap = Worldmap.Instance;
+            Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
+
             ValidateUnitParentObj();
             unitUIHelper = new UnitUIHelper(AllUnitsParent);
         }
@@ -124,6 +119,10 @@ namespace CaseMaroon.WorldMapUI
             {
                 CheckMouse();
             }
+        }
+        private void OnInputStateChanged(InputContext inputContext)
+        {
+            WorldInputContext = inputContext;
         }
         private void CheckMouse()
         {
@@ -184,12 +183,10 @@ namespace CaseMaroon.WorldMapUI
             isDragging = false;
             dragOrigin = Vector2.left;
         }
-
         public void InvokeInputState(InputContext context)
         {
             InputStateChanged?.Invoke(context);
         }
-
         public void InvokeBuildingPlaced(Vector2Int gridPos, Building building)
         {
             BuildingPlaced?.Invoke(gridPos, building);

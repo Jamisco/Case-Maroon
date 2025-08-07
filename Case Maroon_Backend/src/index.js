@@ -4,6 +4,7 @@ import cors from "cors";
 
 import { GameState } from "./models/GameSystems/GameState.js";
 import { gameRoutes } from "./routes/GameRoutes.js";
+import { authRoutes } from "./routes/AuthRoutes.js";  
 
 const app = express();
 const PORT = 3001;
@@ -13,6 +14,7 @@ app.use(express.json());
 
 const gameState = new GameState();
 
+app.use("/api/auth", authRoutes);
 app.use("/api", gameRoutes(gameState));
 
 // ✅ Add this route to return game state for the frontend

@@ -139,11 +139,10 @@ namespace CaseMaroon.WorldMap
             }
 
             HexOverlay = HexShapeMaker.Instance.GenerateHighlightMesh(outlineScale);
-        }
-        
+        }      
         public void UpdateReconOverlay()
         {
-            Player mp = GameState.Instance.MainPlayer;
+            Player mp = GameStateManager.Instance.PlayerOne;
 
             fogMeshFuser.Clear();
             enemyMeshFuser.Clear();

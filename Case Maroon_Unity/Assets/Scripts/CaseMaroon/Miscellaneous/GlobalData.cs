@@ -13,6 +13,18 @@ namespace CaseMaroon.Miscellaneous
         public static int UI_ScreenMask = LayerMask.NameToLayer("UI_Screen");
         public static int UI_WorldMask = LayerMask.NameToLayer("UI_World");
 
+        public static Camera ActiveCamera
+        {
+            get
+            {
+                if (Camera.allCamerasCount == 0)
+                {
+                    Debug.LogError("No cameras found in the scene.");
+                    return null;
+                }
+                return Camera.allCameras[0];
+            }
+        }
         private static List<RaycastResult> SendRays()
         {
             if (EventSystem.current == null)

@@ -8,11 +8,16 @@ using System.Linq;
 
 namespace CaseMaroon.GameSystem
 {
-    public class GameState : MonoBehaviour
+    public enum GamePlayer
     {
-        public static GameState Instance { get; private set; }
-
-        public Player MainPlayer { get; private set; }
+        PlayerOne = 0,
+        PlayerTwo = 1
+    }
+    public class GameStateManager : MonoBehaviour
+    {
+        public static GameStateManager Instance { get; private set; }
+        public Player PlayerOne { get; private set; }
+        public Player PlayerTwo{ get; private set; }
 
         public Dictionary<Vector2Int, Building> buildings = new();
         public Dictionary<Vector2Int, Unit> units = new();
@@ -31,11 +36,10 @@ namespace CaseMaroon.GameSystem
         private void Start()
         {
             BackendTester.Instance.GameStateSynced += GameStateSynced;
-
         }
         private void GameStateSynced(BackendResponses.GameStateResponse gsr)
         {
-            MainPlayer = new Player(gsr.players[0]);
+            PlayerOne = new Player(gsr.players[0]);
 
             WorldmapOverlay.Instance.UpdateReconOverlay();
 

@@ -1,13 +1,13 @@
-﻿using System;
-using UnityEngine;
+﻿using CaseMaroon.Backend;
+using CaseMaroon.Miscellaneous;
+using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
-using CaseMaroon.Miscellaneous;
+using System;
 using System.Collections;
-using CaseMaroon.Units;
-using static CaseMaroon.Miscellaneous.GlobalData;
-using CaseMaroon.Backend;
 using UnityEditor;
+using UnityEngine;
+using static CaseMaroon.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.GameSystem
 {
@@ -20,9 +20,9 @@ namespace CaseMaroon.GameSystem
         [TextArea(3, 10)]
         public string message;
     }
-    public class GameManager : MonoBehaviour
+    public class PlayerStateManager : MonoBehaviour
     {
-        public GameManager Instance { get; private set; }
+        public static PlayerStateManager Instance { get; private set; }
         public MessageManager messageManager;
 
         public float messageDelay = .5f;
@@ -66,8 +66,15 @@ namespace CaseMaroon.GameSystem
         {
             BackendTester.Instance.SyncGameState();
 
-            if(StartSequence)
+            StartGameSequence();
+        }
+
+        public void StartGameSequence()
+        {
+            if (StartSequence)
             {
+                ScreenSpaceUI.Instance.HideSplashShowRest();
+
                 DisableButtons();
                 StartCoroutine(StartGameSequenceCoroutine());
             }
@@ -206,14 +213,14 @@ namespace CaseMaroon.GameSystem
 
 #if UNITY_EDITOR
 
-    [CustomEditor(typeof(GameManager))]
+    [CustomEditor(typeof(PlayerStateManager))]
     public class GameManagerEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
-            GameManager exampleScript = (GameManager)target;
+            PlayerStateManager exampleScript = (PlayerStateManager)target;
 
             if (GUILayout.Button("Restart Game"))
             {

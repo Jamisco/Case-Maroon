@@ -1,5 +1,6 @@
 import express from "express";
 import Ajv from "ajv";
+import crypto from "crypto";
 
 import { Vector2, Vector3 } from "js-vectors";
 import { Vector2IntSchema } from "../models/Miscellaneous/Vectors.schema.js";
@@ -239,5 +240,15 @@ export function gameRoutes(gameState) {
     }
   });
 
+  router.get("/ping", (req, res) => {
+    console.log("Received Ping Request");
+
+    res.status(200).json({
+      success: true,
+      status: "ok",
+      message: "Good Connection",
+    });
+  });
+  
   return router;
 }

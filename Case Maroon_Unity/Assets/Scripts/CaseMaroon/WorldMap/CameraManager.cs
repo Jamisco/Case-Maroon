@@ -56,7 +56,7 @@ namespace CaseMaroon.Systems
 
             if (virtualCamera == null)
             {
-                Debug.LogError("Virtual Camera not Founds");
+                Debug.LogError("Virtual Camera not Found");
                 return;
             }
             
@@ -64,7 +64,7 @@ namespace CaseMaroon.Systems
 
             if (virtualCamera == null)
             {
-                Debug.LogError("Virtual Camera not Founds");
+                Debug.LogError("Virtual Camera not Found");
                 return;
             }
 
