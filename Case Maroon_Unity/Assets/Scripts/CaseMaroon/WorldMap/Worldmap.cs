@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CaseMaroon.Backend;
+using static CaseMaroon.Backend.BackendPayloads;
+
 
 
 #if UNITY_EDITOR
@@ -102,6 +104,13 @@ namespace CaseMaroon.WorldMap
             {
                 GenerateGrid();
             }
+        }
+
+        public void SetMapConfig(MapConfig mapConfig)
+        {
+            noiseGenerator.landNoiseSettings.seed = mapConfig.noiseConfig.landNoiseSettings.seed;
+
+            noiseGenerator.NoiseModified = true;
         }
 
         private void ValidateLayerScale()
@@ -437,6 +446,15 @@ namespace CaseMaroon.WorldMap
             {
                 exampleScript.Init();
                 exampleScript.GenerateGrid();
+            }
+
+            if (GUILayout.Button("Print Json"))
+            {
+                MapConfig mc = new MapConfig(exampleScript);
+
+                string json = JsonUtility.ToJson(mc, true); 
+
+                Debug.Log(json);
             }
 
             if (GUILayout.Button("Clear Grid"))

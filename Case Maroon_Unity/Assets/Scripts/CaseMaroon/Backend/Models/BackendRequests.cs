@@ -7,7 +7,7 @@ namespace CaseMaroon.Backend
     {
         // Supporting classes
         [System.Serializable]
-        public struct UsernameReq
+        public struct UsernameRequest
         {
             public string username;
         }

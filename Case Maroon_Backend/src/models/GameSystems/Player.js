@@ -9,10 +9,12 @@ export class Player {
   static reconScope = 3;
   static reconLevel = 2;
 
-  constructor() {
-    this.id = Player.nextId++;
+  constructor(pid, username) {
+    this.id = pid;
+    this.username = username;
     this.reconPositions = []; // Array of ReconPosition
     this.ownedPositions = []; // Array of Vector2Int
+    this.playerState = PlayerState.Loading; // PlayerState enum
   }
 
   capturePosition(gridPos) {
@@ -97,3 +99,17 @@ export class Player {
     }
   }
 }
+
+export const PlayerState = {
+    0: "Loading",
+    1: "Idle",
+    2: "WaitingForHQPlacement",
+    3: "WaitingForUnitPlacement",
+    4: "WaitingForNext",
+    
+    Loading: 0,
+    Idle: 1,
+    WaitingForHQPlacement: 2,
+    WaitingForUnitPlacement: 3,
+    WaitingForNext: 4
+};

@@ -62,12 +62,17 @@ const QueueStatusSchema = {
   type: "object",
   properties: {
     success: { type: "boolean" },
-    isInQueue: { type: "boolean" },
+    message: { type: "string" },
+    
     queuePosition: { type: "integer", minimum: 0 },
     playersInQueue: { type: "integer", minimum: 0 },
-    estimatedWaitTime: { type: ["string", "null"] }
+    
+    gameFound: { type: "boolean" },
+    gameId: { type: ["string", "null"] },
+    opponent: { type: ["string", "null"] },
   },
-  required: ["success", "isInQueue", "queuePosition", "playersInQueue"],
+  
+  required: ["success", "message", "queuePosition", "playersInQueue", "gameFound"],
   additionalProperties: false,
 };
 

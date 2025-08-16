@@ -1,5 +1,8 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import { activeGames, activeUsers } from "../models/GameSystems/ServerState.js";
+import { Player } from "../models/GameSystems/Player.js";
+import { GameManager } from "../models/GameSystems/GameManager.js";
 
 import {
   QueueJoinResponse,
@@ -11,7 +14,6 @@ const router = express.Router();
 
 // In production, use environment variable
 const JWT_SECRET = "your-secret-key";
-const users = new Set(); // Simple storage - just usernames
 const matchmakingQueue = []; // Array to hold players in queue
 
 function authenticateToken(req, res, next) {
@@ -64,8 +66,8 @@ router.post("/login", (req, res) => {
   }
 
   // Add user if they don't exist (simple registration)
-  if (!users.has(cleanUsername)) {
-    users.add(cleanUsername);
+  if (!activeUsers.has(cleanUsername)) {
+    activeUsers.add(cleanUsername);
   }
 
   // Create JWT token
@@ -88,8 +90,8 @@ router.post("/logout", (req, res) => {
   console.log(`Logout attempt for user: ${username}`);
 
   // Add user if they don't exist (simple registration)
-  if (users.has(username)) {
-    users.delete(username);
+  if (activeUsers.has(username)) {
+    activeUsers.delete(username);
     res.json({
       success: true,
       message: `${username} Logged out`,
@@ -186,49 +188,79 @@ router.post("/queue/leave", authenticateToken, (req, res) => {
 });
 
 // ✅ Get Queue Status Route
-router.get("/queue/status", authenticateToken, (req, res) => {
-   
-  const username = req.user.username;
-  console.log(`Queue status request for user: ${username}`);
+router.get("/queue/status", (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
-  const queueIndex = matchmakingQueue.findIndex(
-    (player) => player.username === username
-  );
-  const isInQueue = queueIndex !== -1;
+  if (token) {
+    // Authenticate token if present
+    authenticateToken(req, res, () => {
+      const username = req.user.username;
+      console.log(`Queue status request for user: ${username}`);
 
-  res.json({
+      const queueIndex = matchmakingQueue.findIndex(
+        (player) => player.username === username
+      );
+      const isInQueue = queueIndex !== -1;
+      const foundMatch = tryMatchPlayers() || {
+        matched: false,
+        gameId: null,
+        player1: null,
+        player2: null,
+      };
+
+      res.json({
+        success: true,
+        gameFound: foundMatch.matched,
+        gameId: foundMatch.gameId,
+        opponent: foundMatch.matched
+          ? foundMatch.player1 === username
+            ? foundMatch.player2
+            : foundMatch.player1
+          : null,
+        queuePosition: isInQueue ? queueIndex + 1 : 0,
+        playersInQueue: matchmakingQueue.length,
+      });
+    });
+  } else {
+    // No token, just report queue info without authentication
+    console.log("Queue status request from guest");
+
+    res.json({
+      success: true,
+      gameFound: false,
+      queuePosition: 0,
+      playersInQueue: matchmakingQueue.length,
+    });
+  }
+});
+
+// -------------------- Ping --------------------
+router.get("/ping", (req, res) => {
+  res.status(200).json({
     success: true,
-    isInQueue: isInQueue,
-    queuePosition: isInQueue ? queueIndex + 1 : 0,
-    playersInQueue: matchmakingQueue.length,
-    estimatedWaitTime: calculateEstimatedWaitTime(matchmakingQueue.length),
+    status: "ok",
+    message: "Good Connection",
   });
 });
 
 // ✅ Match Players Function
 function tryMatchPlayers() {
   if (matchmakingQueue.length >= 2) {
-    const player1 = matchmakingQueue.shift();
-    const player2 = matchmakingQueue.shift();
+    const p1 = matchmakingQueue.shift();
+    const p2 = matchmakingQueue.shift();
 
-    const gameId = `game_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const player1 = new Player(1, p1.username);
+    const player2 = new Player(2, p2.username);
 
-    // Create new game
-    activeGames.set(gameId, {
-      gameId: gameId,
-      players: [
-        { username: player1.username, playerId: 1 },
-        { username: player2.username, playerId: 2 },
-      ],
-      status: "active",
-      createdAt: Date.now(),
-    });
+    const gameManager = new GameManager(player1, player2);
 
-    console.log(
-      `Match created: ${gameId} - ${player1.username} vs ${player2.username}`
-    );
+    activeGames.set(gameManager.gameId, gameManager);
+
+    // Use the gameManager's generated gameId
+    const gameId = gameManager.gameId;
+
+    console.log(`Game created: ${gameId} - ${p1.username} vs ${p2.username}`);
 
     return {
       matched: true,
@@ -238,18 +270,7 @@ function tryMatchPlayers() {
     };
   }
 
-  return { matched: false };
-}
-
-// ✅ Helper Function
-function calculateEstimatedWaitTime(queueLength) {
-  if (queueLength <= 1) return "Finding opponent...";
-
-  // Rough estimate: assume 1 match every 30 seconds
-  const estimatedSeconds = Math.ceil(queueLength / 2) * 30;
-
-  if (estimatedSeconds < 60) return `~${estimatedSeconds}s`;
-  return `~${Math.ceil(estimatedSeconds / 60)}m`;
+  return null;
 }
 
 export { router as authRoutes };

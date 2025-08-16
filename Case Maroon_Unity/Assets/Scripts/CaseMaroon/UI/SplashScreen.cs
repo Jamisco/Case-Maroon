@@ -43,15 +43,48 @@ namespace CaseMaroon.WorldMapUI
 
         private void Start()
         {
+            BackendMessenger.Instance.OnPingResponse += OnPingResponse;
+            BackendMessenger.Instance.OnLoginResponse += OnLoginResponse;
+            BackendMessenger.Instance.OnQueueJoined += OnQueueJoined;
+            BackendMessenger.Instance.OnQueueLeft += OnQueueLeft;
 
-            BackendTester.Instance.OnPingResponse += OnPingResponse;
-            BackendTester.Instance.OnLoginResponse += OnLoginResponse;
-            BackendTester.Instance.OnQueueJoined += OnQueueJoined;
-            BackendTester.Instance.OnQueueLeft += OnQueueLeft;
+            BackendMessenger.Instance.OnQueueStatusChecked += OnQueueStatusChecked;
 
-            BackendTester.Instance.OnQueueStatusChecked += OnQueueStatusChecked;
+            BackendMessenger.Instance.OnMapConfigReceived += OnMapConfigReceived;
 
-            BackendTester.Instance.PingServer();
+            BackendMessenger.Instance.OnNoiseHashValidated += OnNoiseHashValidated;
+
+            BackendMessenger.Instance.StartPingPolling();
+
+        }
+
+        private void OnNoiseHashValidated(bool success, HashValidResponse response)
+        {
+            if(success)
+            {
+                BackendMessenger.Instance.StopPollingQueueStatus();
+                BackendMessenger.Instance.StopPingPolling();
+
+                GameManager.Instance.StartGameSequence();
+            }
+            else
+            {
+                MessageBox.Show("Invalid Map", "The map configuration is invalid or does not match the server's configuration. ");
+            }
+        }
+
+        private void OnMapConfigReceived(bool success, BackendPayloads.MapConfig config)
+        {
+            if(success)
+            {
+                Worldmap.Instance.SetMapConfig(config);
+                Worldmap.Instance.GenerateGrid();
+
+                float clientHash = Worldmap.Instance.noiseGenerator.NoiseHash;
+
+                BackendMessenger.Instance.ValidateNoiseHash(clientHash);
+
+            }
         }
 
         private void OnQueueLeft(bool obj)
@@ -60,19 +93,25 @@ namespace CaseMaroon.WorldMapUI
             {
                 ChangeToFindGame();
                 queueStatus = QueueStatus.InLobby;
-                BackendTester.Instance.StopPollingQueueStatus();
-                QueueCount.text = "NA";
             }
         }
-
         private void OnQueueStatusChecked(QueueStatusResponse response)
         {
             if(queueStatus == QueueStatus.InQueue)
             {
+                if(response.gameFound == true)
+                {
+                    AuthManager.GameId = response.gameId;
+
+                    BackendMessenger.Instance.GetMapConfig();
+                }
+            }
+
+            if(response.success)
+            {
                 QueueCount.text = response.playersInQueue.ToString();
             }
         }
-
         private void OnQueueJoined(bool arg1, QueueJoinResponse response)
         {
             // CIRCLE that shows your in queue
@@ -81,13 +120,11 @@ namespace CaseMaroon.WorldMapUI
 
             if(arg1 == true)
             {
-                BackendTester.Instance.PollQueueStatus();
                 ChangeToLeaveQueue();
 
                 queueStatus = QueueStatus.InQueue;
             }
         }
-
         private void OnLoginResponse(bool status, LoginResponse loginResponse)
         {
             if(status)
@@ -107,23 +144,36 @@ namespace CaseMaroon.WorldMapUI
 
         private void OnPingResponse(bool status)
         {
-            AuthStatus st = (status) ? AuthStatus.Connected : AuthStatus.Disconnected;
+            if(status)
+            {
+                if (authStatus == AuthStatus.Disconnected)
+                {
+                    SetAuthStatus(AuthStatus.Connected);
+                    LoginBtn.gameObject.SetActive(true);
+                }
 
-            SetAuthStatus(st);
-            LoginBtn.gameObject.SetActive(true);
+                if(!BackendMessenger.Instance.IsPollingQueue)
+                {
+                    BackendMessenger.Instance.PollQueueStatus();
+                }
+            }
+            else
+            {
+                SetAuthStatus(AuthStatus.Disconnected);
+                LoginBtn.gameObject.SetActive(false);
+            }
         }
-
 
         MessageBox messageBox;
         private void FindGameClicked()
         {
             if(authStatus == AuthStatus.LoggedIn && queueStatus == QueueStatus.InLobby)
             {
-                BackendTester.Instance.JoinQueue();
+                BackendMessenger.Instance.JoinQueue();
             }
             else if (queueStatus == QueueStatus.InQueue)
             {
-                BackendTester.Instance.LeaveQueue();
+                BackendMessenger.Instance.LeaveQueue();
             }
             else
             {
@@ -147,7 +197,7 @@ namespace CaseMaroon.WorldMapUI
         }
         private void JoinGameClicked()
         {
-            BackendTester.Instance.UploadMapConfig(Worldmap.Instance);
+            BackendMessenger.Instance.UploadMapConfig(Worldmap.Instance);
         }
         private void LoginBtnClicked()
         {
@@ -160,16 +210,23 @@ namespace CaseMaroon.WorldMapUI
                     return; // Invalid username, do not proceed
                 }
 
-                BackendTester.Instance.Login(username);
+                BackendMessenger.Instance.Login(username);
             }
             else if (authStatus == AuthStatus.LoggedIn)
             {
-                BackendTester.Instance.Logout(AuthManager.Username);
-                BackendTester.Instance.OnLoggedOut += (obj) =>
+                if(queueStatus == QueueStatus.InQueue)
+                {
+                    // this will leave the queue
+                    FindGameClicked();
+                }
+
+                BackendMessenger.Instance.Logout(AuthManager.Username);
+                BackendMessenger.Instance.OnLoggedOut += (obj) =>
                 {
                     AuthManager.ClearAuth();
                     SetAuthStatus(AuthStatus.Connected);
                     ChangeToLogin();
+                    BackendMessenger.Instance.StartPingPolling();
                 };
             }
             else
@@ -189,7 +246,6 @@ namespace CaseMaroon.WorldMapUI
             LoginBtn.GetComponentInChildren<TMP_Text>().text = "Login";
             LoginBtn.image.color = Color.white;
         }
-
         private bool VerifyUsername(string username)
         {
             // Regex: Starts with a letter, followed by 2-15 alphanumeric characters
@@ -207,10 +263,19 @@ namespace CaseMaroon.WorldMapUI
             ErrorTxt.text = ""; // Clear error if valid
             return true;
         }
-
         public void UpdateQueueCount(int count)
         {
             QueueCount.text = $"{count}";
+        }
+
+        private void PrepareForGameStart()
+        {
+            // reset ui back to defaults
+            // stop polling queue status
+
+            BackendMessenger.Instance.StopPollingQueueStatus();
+            //ChangeToFindGame();
+
         }
 
         private enum AuthStatus { Disconnected, Connected, LoggedIn }

@@ -60,6 +60,7 @@ export class NoiseGenerator {
 
         // Simple sum hash, could be improved
         this.noiseHash += landVal + rainVal + tempVal;
+        this.noiseHash = Number(this.noiseHash.toFixed(3));
       }
     }
   }

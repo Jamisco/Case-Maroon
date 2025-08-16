@@ -13,9 +13,9 @@ namespace CaseMaroon.GameSystem
         PlayerOne = 0,
         PlayerTwo = 1
     }
-    public class GameStateManager : MonoBehaviour
+    public class GameManager2 : MonoBehaviour
     {
-        public static GameStateManager Instance { get; private set; }
+        public static GameManager2 Instance { get; private set; }
         public Player PlayerOne { get; private set; }
         public Player PlayerTwo{ get; private set; }
 
@@ -35,7 +35,7 @@ namespace CaseMaroon.GameSystem
 
         private void Start()
         {
-            BackendTester.Instance.GameStateSynced += GameStateSynced;
+            BackendMessenger.Instance.GameStateSynced += GameStateSynced;
         }
         private void GameStateSynced(BackendResponses.GameStateResponse gsr)
         {

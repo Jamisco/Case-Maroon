@@ -190,13 +190,13 @@ namespace CaseMaroon.WorldMapUI
         public void InvokeBuildingPlaced(Vector2Int gridPos, Building building)
         {
             BuildingPlaced?.Invoke(gridPos, building);
-            BackendTester.Instance.SyncGameState();
+            BackendMessenger.Instance.GetGameState();
         }
 
         public void InvokeUnitPlaced(Vector2Int gridPos, UnitType type)
         {
             UnitPlaced?.Invoke(gridPos, type);
-            BackendTester.Instance.SyncGameState();
+            BackendMessenger.Instance.GetGameState();
         }
 
         private void ValidateUnitParentObj()
@@ -260,7 +260,7 @@ namespace CaseMaroon.WorldMapUI
                 {
                     List<Vector2Int> path = GetFastestPath(SelectedUnit.unit, SelectedUnit.unit.GridPosition, gridPos);
 
-                    BackendTester.Instance.MoveUnit(SelectedUnit.unit, path);
+                    BackendMessenger.Instance.MoveUnit(SelectedUnit.unit, path);
                 }
             }
             else

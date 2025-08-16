@@ -74,30 +74,38 @@ namespace CaseMaroon.Backend
             public int playersInQueue;
         }
 
-        // Add these classes for queue responses
-        [System.Serializable]
-        public struct GameFoundResponse
-        {
-            public bool gameFound;
-            public string message;
-
-            public string gameId;
-            public string opponent;
-
-            public int playerId;
-        }
-
         [System.Serializable]
         public struct QueueStatusResponse
         {
             public bool success;
-            public bool isInQueue;
-
             public int queuePosition;
             public int playersInQueue;
 
-            public string estimatedWaitTime;
+            public bool gameFound;
+            public string gameId;
+            public string opponentName;
         }
 
+        [System.Serializable]
+        public struct PlayerStatus
+        {
+            public string id;
+            public int state;
+        }
+
+        [System.Serializable]
+        public struct PlayersStatusResponse
+        {
+            public bool success;
+            public PlayerStatus[] players;
+        }
+
+        [System.Serializable]
+        public class HashValidResponse
+        {
+            public bool success;
+            public string message;
+            public float serverHash;
+        }
     }
 }

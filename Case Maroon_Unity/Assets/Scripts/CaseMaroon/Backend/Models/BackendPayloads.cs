@@ -97,8 +97,5 @@ namespace CaseMaroon.Backend
                 biomeConfig = new BiomeConfig(map.biomeGenerator);
             }
         }
-
-        
-
     }
 }

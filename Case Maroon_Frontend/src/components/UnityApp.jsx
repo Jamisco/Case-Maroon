@@ -48,7 +48,7 @@ function UnityApp({ onGridClick }) {
   return (
     <Unity
       unityProvider={unityProvider}
-      style={{ width: "70%", height: "80%" }}
+      style={{ width: "90%", height: "90%" }}
       devicePixelRatio={devicePixelRatio}
     />
   );

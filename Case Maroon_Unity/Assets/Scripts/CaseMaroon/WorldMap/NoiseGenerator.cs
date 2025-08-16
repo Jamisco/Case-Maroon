@@ -77,6 +77,7 @@ namespace CaseMaroon.WorldMap
             }
             else
             {
+
                 for (int i = 0; i < planetSize.x; i++)
                 {
                     for (int j = 0; j < planetSize.y; j++)
@@ -86,6 +87,8 @@ namespace CaseMaroon.WorldMap
                         ComputeTempNoise(i, j);
 
                         NoiseHash += landValues[i, j] + rainValues[i, j] + tempValues[i, j];
+
+                        NoiseHash = (float)Math.Round(NoiseHash, 3);
                     }
                 }
             }

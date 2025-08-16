@@ -1,0 +1,113 @@
+{
+  "MapConfig": {
+    "worldmapConfig": {
+      "shapeScale": { "x": 1.5, "y": 1.5 },
+      "gridSize": { "x": 20, "y": 20 },
+      "chunkSize": { "x": 30, "y": 30 }
+    },
+    "noiseConfig": {
+      "landNoiseSettings": {
+        "fractalType": 2,
+        "noiseType": 4,
+        "seed": 500,
+        "frequency": 4,
+        "multiplier": 0.4,
+        "scale": 1,
+        "fractal": 6,
+        "minValue": 0,
+        "maxValue": 1,
+        "offset": { "x": 0, "y": 0 }
+      },
+      "rainNoiseSettings": {
+        "fractalType": 2,
+        "noiseType": 0,
+        "seed": 42,
+        "frequency": 1,
+        "multiplier": 1,
+        "scale": 1,
+        "fractal": 0,
+        "minValue": 0,
+        "maxValue": 1,
+        "offset": { "x": 0, "y": 0 }
+      },
+      "tempNoiseSettings": {
+        "fractalType": 2,
+        "noiseType": 3,
+        "seed": 192,
+        "frequency": 1,
+        "multiplier": 0.4,
+        "scale": 1,
+        "fractal": 4,
+        "minValue": 0,
+        "maxValue": 1,
+        "offset": { "x": 0, "y": 0 }
+      }
+    },
+    "biomeConfig": {
+      "waterThreshold": 0.2,
+      "snowThreshold": 0,
+      "biomeRules": [
+        {
+          "biomeType": 0,
+          "tempRange": { "x": 0, "y": 0.33 },
+          "rainRange": { "x": 0, "y": 0.33 },
+          "traversalCost": { "InfantryCost": 25, "TrackedCost": 35 }
+        },
+        {
+          "biomeType": 1,
+          "tempRange": { "x": 0, "y": 0.33 },
+          "rainRange": { "x": 0.33, "y": 0.66 },
+          "traversalCost": { "InfantryCost": 30, "TrackedCost": 45 }
+        },
+        {
+          "biomeType": 2,
+          "tempRange": { "x": 0, "y": 0.33 },
+          "rainRange": { "x": 0.66, "y": 1 },
+          "traversalCost": { "InfantryCost": 35, "TrackedCost": 50 }
+        },
+        {
+          "biomeType": 6,
+          "tempRange": { "x": 0.33, "y": 0.66 },
+          "rainRange": { "x": 0, "y": 0.33 },
+          "traversalCost": { "InfantryCost": 30, "TrackedCost": 45 }
+        },
+        {
+          "biomeType": 3,
+          "tempRange": { "x": 0.33, "y": 0.66 },
+          "rainRange": { "x": 0.33, "y": 0.66 },
+          "traversalCost": { "InfantryCost": 10, "TrackedCost": 10 }
+        },
+        {
+          "biomeType": 4,
+          "tempRange": { "x": 0.33, "y": 0.66 },
+          "rainRange": { "x": 0.66, "y": 1 },
+          "traversalCost": { "InfantryCost": 25, "TrackedCost": 35 }
+        },
+        {
+          "biomeType": 7,
+          "tempRange": { "x": 0.66, "y": 1 },
+          "rainRange": { "x": 0, "y": 0.33 },
+          "traversalCost": { "InfantryCost": 15, "TrackedCost": 20 }
+        },
+        {
+          "biomeType": 5,
+          "tempRange": { "x": 0.66, "y": 1 },
+          "rainRange": { "x": 0.33, "y": 0.66 },
+          "traversalCost": { "InfantryCost": 50, "TrackedCost": -1 }
+        },
+        {
+          "biomeType": 8,
+          "tempRange": { "x": 0.66, "y": 1 },
+          "rainRange": { "x": 0.66, "y": 1 },
+          "traversalCost": { "InfantryCost": 55, "TrackedCost": -1 }
+        },
+        {
+          "biomeType": 9,
+          "tempRange": { "x": 0, "y": 1 },
+          "rainRange": { "x": 0, "y": 1 },
+          "traversalCost": { "InfantryCost": -1, "TrackedCost": -1 }
+        }
+      ]
+    }
+  }
+}

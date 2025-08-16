@@ -1,10 +1,13 @@
 import { BiomeGenerator } from "./BiomeGenerator.js";
+import { MapConfig } from "./MapConfig.js";
 import { NoiseGenerator } from "./NoiseGenerator.js";
 
 
 export class Worldmap {
 
     constructor(MapConfig) {
+        
+        this.MapConfig = MapConfig;
         
         this.gridSize = MapConfig.worldmapConfig.gridSize;
                 
@@ -29,6 +32,10 @@ export class Worldmap {
         }
 
         return biome;
+    }
+    
+    getMapConfig() {
+        return this.MapConfig;
     }
     
 }

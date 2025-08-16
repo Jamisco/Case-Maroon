@@ -6,6 +6,8 @@ namespace CaseMaroon.Backend
     {
         public static string Token { get; private set; }
         public static string Username { get; private set; }
+
+        public static string GameId { get; set; } 
         public static void SetToken(LoginResponse lr)
         {
             Token = lr.token;

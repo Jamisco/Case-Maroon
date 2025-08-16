@@ -54,7 +54,6 @@ namespace CaseMaroon.GameSystem
                 ReconPositions.Add(reconPos);
             }
         }
-
         private void RemoveReconPosition(ReconPosition reconPos)
         {
             if (ReconPositions.TryGetValue(reconPos, out var existing))
@@ -82,8 +81,6 @@ namespace CaseMaroon.GameSystem
                 RemoveReconPosition(reconPos);
             }
         }
-
-
         private void RequestDataFromSever()
         {
             // when the game starts, request data such as positions, units, building...

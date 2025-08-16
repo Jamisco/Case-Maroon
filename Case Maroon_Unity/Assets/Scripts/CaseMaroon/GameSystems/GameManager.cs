@@ -20,23 +20,24 @@ namespace CaseMaroon.GameSystem
         [TextArea(3, 10)]
         public string message;
     }
-    public class PlayerStateManager : MonoBehaviour
+    public class GameManager : MonoBehaviour
     {
-        public static PlayerStateManager Instance { get; private set; }
+        public static GameManager Instance { get; private set; }
         public MessageManager messageManager;
 
         public float messageDelay = .5f;
         public bool StartSequence = false;
         public enum InitMessage { Welcome, SpawnHQ, PlaceUnits}
-        public enum InitGameState
+        public enum PlayerState
         {
+            Loading,
             Idle, 
             WaitingForHQPlacement,
             WaitingForUnitPlacement,
             WaitingForNext
         }
 
-        public InitGameState currentInitState;
+        public PlayerState playerState;
         private void Awake()
         {
             Instance = this;
@@ -49,9 +50,9 @@ namespace CaseMaroon.GameSystem
         }
         private void Start()
         {
+            playerState = PlayerState.Loading;
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
         }
-
         public void RestartGame()
         {
             Worldmap.Instance.Start();
@@ -61,12 +62,17 @@ namespace CaseMaroon.GameSystem
             StopCoroutine(StartGameSequenceCoroutine());
             StartCoroutine(StartGameSequenceCoroutine());
         }
-
         private void OnWorldGenerated(Worldmap map)
         {
-            BackendTester.Instance.SyncGameState();
+            BackendMessenger.Instance.GetGameState();
 
-            StartGameSequence();
+            BackendMessenger.Instance.OnPlayerStatesResponse += OnPlayerStatesResponse;
+            BackendMessenger.Instance.PollPlayerStates();
+        }
+
+        private void OnPlayerStatesResponse(BackendResponses.PlayersStatusResponse response)
+        {
+            
         }
 
         public void StartGameSequence()
@@ -80,11 +86,12 @@ namespace CaseMaroon.GameSystem
             }
             else
             {
+                ScreenSpaceUI.Instance.HideSplashShowRest();
+
                 SideOverlay.Instance.CreateAllCards();
                 SideOverlay.Instance.FlipOutlines(SideOverlay.SelectedCard.BuildingCards);
             }
         }
-
         public void DisableButtons()
         {
             SideOverlay.Instance.buildingButton.enabled = false;
@@ -101,7 +108,7 @@ namespace CaseMaroon.GameSystem
 
             SideOverlay.Instance.HighlightBuildingCard(BuildingType.Headquarters, true);
 
-            currentInitState = InitGameState.WaitingForHQPlacement;
+            playerState = PlayerState.WaitingForHQPlacement;
 
             // Define the handler using the correct delegate type
             BuildingPlacedHandler onBuildingPlaced = null;
@@ -112,7 +119,7 @@ namespace CaseMaroon.GameSystem
                 {
                     SideOverlay.Instance.HighlightBuildingCard(BuildingType.Headquarters, false);
 
-                    currentInitState = InitGameState.Idle;
+                    playerState = PlayerState.Idle;
                     // Unsubscribe from event
                     WorldUI.Instance.BuildingPlaced -= onBuildingPlaced;
                 }
@@ -134,7 +141,7 @@ namespace CaseMaroon.GameSystem
 
             SideOverlay.Instance.HighlightUnitCard(UnitType.Infantry, true);
 
-            currentInitState = InitGameState.WaitingForUnitPlacement;
+            playerState = PlayerState.WaitingForUnitPlacement;
 
             // Define the handler using the correct delegate type
             UnitPlacedHandler onUnitPlaced = null;
@@ -150,7 +157,7 @@ namespace CaseMaroon.GameSystem
 
                     SideOverlay.Instance.FlipOutlines(SideOverlay.SelectedCard.UnitCards);
 
-                    currentInitState = InitGameState.Idle;
+                    playerState = PlayerState.Idle;
                     // Unsubscribe from event
                     WorldUI.Instance.UnitPlaced -= onUnitPlaced;
                 }
@@ -184,7 +191,7 @@ namespace CaseMaroon.GameSystem
 
             SpawnHQ_Step();
 
-            yield return new WaitUntil(() => currentInitState == InitGameState.Idle);
+            yield return new WaitUntil(() => playerState == PlayerState.Idle);
 
             MessageData placeUnit = messageManager.GetMessage(InitMessage.PlaceUnits.ToString());
 
@@ -196,7 +203,7 @@ namespace CaseMaroon.GameSystem
 
             SpawnUnit_Step();
 
-            yield return new WaitUntil(() => currentInitState == InitGameState.Idle);
+            yield return new WaitUntil(() => playerState == PlayerState.Idle);
 
             MessageData msg = new MessageData();
 
@@ -213,14 +220,14 @@ namespace CaseMaroon.GameSystem
 
 #if UNITY_EDITOR
 
-    [CustomEditor(typeof(PlayerStateManager))]
+    [CustomEditor(typeof(GameManager))]
     public class GameManagerEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
-            PlayerStateManager exampleScript = (PlayerStateManager)target;
+            GameManager exampleScript = (GameManager)target;
 
             if (GUILayout.Button("Restart Game"))
             {

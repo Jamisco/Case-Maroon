@@ -108,7 +108,7 @@ namespace CaseMaroon.WorldMap
                 Building newBuilding = new Building(gridPos, 
                                 (BuildingType) cur.BuildType);
 
-                BackendTester.Instance.SpawnBuilding(newBuilding);
+                BackendMessenger.Instance.SpawnBuilding(newBuilding);
             }
             else if (cur.State == InputState.PlacingUnit)
             {
@@ -119,7 +119,7 @@ namespace CaseMaroon.WorldMap
 
                 ud.CreateUniqueId();
 
-                BackendTester.Instance.SpawnUnit(gridPos, ud);
+                BackendMessenger.Instance.SpawnUnit(gridPos, ud);
             }
 
             IsPreviewing = false;
