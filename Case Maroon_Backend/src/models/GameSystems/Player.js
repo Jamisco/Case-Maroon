@@ -15,6 +15,7 @@ export class Player {
     this.reconPositions = []; // Array of ReconPosition
     this.ownedPositions = []; // Array of Vector2Int
     this.playerState = PlayerState.Loading; // PlayerState enum
+    this.initState = true;
   }
 
   capturePosition(gridPos) {

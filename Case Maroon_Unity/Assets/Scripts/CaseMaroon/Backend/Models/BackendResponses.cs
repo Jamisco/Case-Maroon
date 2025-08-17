@@ -35,6 +35,7 @@ namespace CaseMaroon.Backend
         public struct PlayerResponse
         {
             public int id;
+            public string username;
             public List<ReconPosition > reconPositions;
             public List<Vector2Int> ownedPositions;
         }
@@ -66,19 +67,12 @@ namespace CaseMaroon.Backend
         {
             public bool success;
             public string message;
-
-            public string gameId;
-            public string opponent;
-
-            public int queuePosition;
-            public int playersInQueue;
         }
 
         [System.Serializable]
         public struct QueueStatusResponse
         {
             public bool success;
-            public int queuePosition;
             public int playersInQueue;
 
             public bool gameFound;

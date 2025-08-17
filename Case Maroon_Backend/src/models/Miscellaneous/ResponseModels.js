@@ -4,14 +4,6 @@ const ajv = new Ajv();
 
 // ─── MODELS ──────────────────────────────────────────────
 
-export const QueueJoinResponse = {
-  success: false,
-  message: "",
-  gameId: null,
-  opponent: null,
-  queuePosition: 0,
-  playersInQueue: 0
-};
 
 export const GameFoundResponse = {
   gameFound: false,

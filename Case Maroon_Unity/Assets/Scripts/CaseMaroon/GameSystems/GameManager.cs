@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using static CaseMaroon.Backend.BackendResponses;
 using static CaseMaroon.Miscellaneous.GlobalData;
 
 namespace CaseMaroon.GameSystem
@@ -25,6 +26,8 @@ namespace CaseMaroon.GameSystem
         public static GameManager Instance { get; private set; }
         public MessageManager messageManager;
 
+        public Player GamePlayer;
+
         public float messageDelay = .5f;
         public bool StartSequence = false;
         public enum InitMessage { Welcome, SpawnHQ, PlaceUnits}
@@ -37,22 +40,43 @@ namespace CaseMaroon.GameSystem
             WaitingForNext
         }
 
-        public PlayerState playerState;
+        private PlayerState playerState;
         private void Awake()
         {
-            Instance = this;
-
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject); // Prevent duplicates
                 return;
             }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
         }
         private void Start()
         {
             playerState = PlayerState.Loading;
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
+            BackendMessenger.Instance.GameStateSynced += GameStateSynced;
         }
+
+        private void GameStateSynced(BackendResponses.GameStateResponse gsr)
+        {
+            PlayerResponse choosen = gsr.players.Find(p => p.username == AuthManager.Username);
+
+            if (GamePlayer == null)
+            {
+                GamePlayer = new Player(choosen);
+            }
+            else
+            {
+                GamePlayer.Update(choosen);
+            }
+
+            WorldmapOverlay.Instance.UpdateReconOverlay();
+
+        }
+
         public void RestartGame()
         {
             Worldmap.Instance.Start();

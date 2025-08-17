@@ -87,6 +87,18 @@ namespace CaseMaroon.GameSystem
             // to be implemented
         }
 
+        public void Update(PlayerResponse pr)
+        {
+            // Update the player's data with the server data
+            Id = pr.id;
+            // Update recon positions
+            ReconPositions.Clear();
+            ReconPositions.UnionWith(pr.reconPositions);
+            // Update owned positions
+            OwnedPositions.Clear();
+            OwnedPositions.UnionWith(pr.ownedPositions);
+        }
+
 
     }
 }

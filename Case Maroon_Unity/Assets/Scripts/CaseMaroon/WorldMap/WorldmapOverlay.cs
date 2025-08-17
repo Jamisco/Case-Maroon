@@ -142,7 +142,7 @@ namespace CaseMaroon.WorldMap
         }      
         public void UpdateReconOverlay()
         {
-            Player mp = GameManager2.Instance.PlayerOne;
+            Player mp = GameManager.Instance.GamePlayer;
 
             fogMeshFuser.Clear();
             enemyMeshFuser.Clear();

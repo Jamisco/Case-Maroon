@@ -16,32 +16,16 @@ import {
   validateMoveUnit,
   validateSpawnUnit,
 } from "../models/Miscellaneous/index.js";
+
 import { GameManager } from "../models/GameSystems/GameManager.js";
+
+import { authenticateToken } from "../models/GameSystems/ServerState.js";
 
 let worldMap = null;
 
 const ajv = new Ajv();
 const mapValidator = ajv.compile(MapConfigSchema);
 const validateBuilding = ajv.compile(buildingSchema);
-
-const JWT_SECRET = process.env.JWT_SECRET || "changeme"; // make sure to keep secret safe
-
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // "Bearer <token>"
-
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-    req.user = user;
-    next();
-  });
-}
 
 export function gameRoutes(activeGames) {
   const router = express.Router();
@@ -95,6 +79,7 @@ export function gameRoutes(activeGames) {
     const valid = gameManager.validateNoiseHash(clientHash);
 
     if (valid) {
+      gameManager.gridGenerated = true;
       return res.status(200).json({
         success: true,
         message: "Noise hash is valid",
@@ -115,7 +100,7 @@ export function gameRoutes(activeGames) {
     if (!gameManager) return;
 
     const data = req.body;
-    const playerId = req.user.username;
+    const playerId = gameManager.getPlayerId(req.user.username);
 
     if (!validateSpawnUnit(data)) {
       return res.status(400).json({
@@ -150,7 +135,7 @@ export function gameRoutes(activeGames) {
     if (!gameManager) return;
 
     const data = req.body;
-    const playerId = req.user.username;
+    const playerId = gameManager.getPlayerId(req.user.username);
 
     if (!validateMoveUnit(data)) {
       return res.status(400).json({
@@ -186,7 +171,7 @@ export function gameRoutes(activeGames) {
     if (!gameManager) return;
 
     const building = req.body;
-    const playerId = req.user.username;
+    const playerId = gameManager.getPlayerId(req.user.username);
 
     if (!validateBuilding(building)) {
       return res.status(400).json({

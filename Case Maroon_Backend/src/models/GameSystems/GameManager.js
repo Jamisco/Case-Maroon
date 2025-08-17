@@ -104,6 +104,15 @@ export class GameManager {
   getPlayerById(playerId) {
     return this.players.find((p) => p.id === playerId);
   }
+  
+  getPlayerByUsername(username) {
+    return this.players.find((p) => p.username === username);
+  }
+  
+  getPlayerId(username) {
+    const player = this.getPlayerByUsername(username);
+    return player ? player.id : null;
+  }
 
   updateVisionAround(playerId, gridPos, distance, unitRecon, buildingRecon) {
     const reconPos = ReconPosition.createReconPosition(
@@ -130,11 +139,17 @@ export class GameManager {
     let curPlayer = this.getPlayerById(playerId);
     if (!curPlayer) return false;
 
-    if (!this.gridGenerated) {
-      if (!curPlayer.ownsHex(building.gridPosition)) {
-        return false;
-      }
+    // If this is the first building for the player, capture the position
+    // to ensure they own the hex
+    if (curPlayer.initState) {
+      curPlayer.initState = false;
+      curPlayer.capturePosition(building.gridPosition);
     }
+    
+    if (!curPlayer.ownsHex(building.gridPosition)) {
+      console.error("Player does not own the hex for this building.");
+      return false;
+    } 
 
     this.buildings.push(building);
 

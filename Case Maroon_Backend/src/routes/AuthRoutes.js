@@ -5,33 +5,15 @@ import { Player } from "../models/GameSystems/Player.js";
 import { GameManager } from "../models/GameSystems/GameManager.js";
 
 import {
-  QueueJoinResponse,
-  QueueJoinSchema,
-  validateQueueJoin,
-} from "../models/Miscellaneous/index.js";
+  authenticateToken,
+  JWT_SECRET,
+} from "../models/GameSystems/ServerState.js";
 
 const router = express.Router();
 
 // In production, use environment variable
-const JWT_SECRET = "your-secret-key";
 const matchmakingQueue = []; // Array to hold players in queue
-
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Expecting "Bearer <token>"
-
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-    req.user = user;
-    next();
-  });
-}
+const pendingMatches = new Map(); // username -> gameId
 
 // Simple login/register (creates user if doesn't exist)
 router.post("/login", (req, res) => {
@@ -109,74 +91,72 @@ router.post("/queue/join", authenticateToken, (req, res) => {
 
   console.log(`${username} wants to join queue`);
 
-  // Check if user is already in queue
-  const alreadyInQueue = matchmakingQueue.some(
-    (player) => player.username === username
-  );
-
-  if (alreadyInQueue) {
+  // ✅ Already in queue?
+  if (matchmakingQueue.some((player) => player.username === username)) {
     const response = {
-      ...QueueJoinResponse,
       success: false,
       message: "You are already in the queue",
-      queuePosition:
-        matchmakingQueue.findIndex((player) => player.username === username) +
-        1,
-      playersInQueue: matchmakingQueue.length,
     };
-
-    if (!validateQueueJoin(response)) {
-      console.error("Validation failed:", validateQueueJoin.errors);
-    }
 
     return res.json(response);
   }
 
-  // Add player to queue
-  const queueEntry = {
-    username: username,
-    joinedAt: Date.now(),
-  };
-
-  matchmakingQueue.push(queueEntry);
-
-  const response = {
-    ...QueueJoinResponse,
-    success: true,
-    message: "Successfully joined the queue",
-    queuePosition: matchmakingQueue.length, // user just joined at the end
-    playersInQueue: matchmakingQueue.length,
-  };
-
-  if (!validateQueueJoin(response)) {
-    console.error("Validation failed:", validateQueueJoin.errors);
-  }
-
+  // ✅ Add player to queue
+  matchmakingQueue.push({ username, joinedAt: Date.now() });
   console.log(
     `${username} joined queue. Queue size: ${matchmakingQueue.length}`
   );
+
+  const response = {
+    success: true,
+    message: "Successfully joined the queue",
+  };
+
+  tryMatchPlayers(); // Try to match players immediately
+
   return res.json(response);
 });
+
+function tryMatchPlayers() {
+  if (matchmakingQueue.length >= 2) {
+    const p1 = matchmakingQueue.shift();
+    const p2 = matchmakingQueue.shift();
+
+    const player1 = new Player(1, p1.username);
+    const player2 = new Player(2, p2.username);
+
+    const gameManager = new GameManager(player1, player2);
+    activeGames.set(gameManager.gameId, gameManager);
+    let gameId = gameManager.gameId;
+    // Add both players to pending matches
+    pendingMatches.set(player1.username, { gameId, notified: false });
+    pendingMatches.set(player2.username, { gameId, notified: false });
+  }
+}
 
 // ✅ Leave Queue Route
 router.post("/queue/leave", authenticateToken, (req, res) => {
   const username = req.user.username;
 
-  const initialLength = matchmakingQueue.length;
-  const queueIndex = matchmakingQueue.findIndex(
-    (player) => player.username === username
-  );
+  // Remove from normal queue
+  const queueIndex = matchmakingQueue.findIndex((p) => p.username === username);
+  if (queueIndex !== -1) matchmakingQueue.splice(queueIndex, 1);
 
-  if (queueIndex === -1) {
-    return res.json({
-      success: false,
-      message: "You are not in the queue",
-      playersInQueue: matchmakingQueue.length,
-    });
+  // Remove pending game if exists
+  if (pendingMatches.has(username)) {
+    const gameId = pendingMatches.get(username);
+    const game = activeGames.get(gameId);
+
+    if (game) {
+      game.players.forEach((p) => pendingMatches.delete(p.username));
+      activeGames.delete(gameId);
+      console.log(
+        `Pending game ${gameId} removed for players: ${game.players
+          .map((p) => p.username)
+          .join(", ")}`
+      );
+    }
   }
-
-  // Remove from queue
-  matchmakingQueue.splice(queueIndex, 1);
 
   console.log(`${username} left queue. Queue size: ${matchmakingQueue.length}`);
 
@@ -189,50 +169,68 @@ router.post("/queue/leave", authenticateToken, (req, res) => {
 
 // ✅ Get Queue Status Route
 router.get("/queue/status", (req, res) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = req.headers["authorization"]?.split(" ")[1];
 
-  if (token) {
-    // Authenticate token if present
-    authenticateToken(req, res, () => {
-      const username = req.user.username;
-      console.log(`Queue status request for user: ${username}`);
-
-      const queueIndex = matchmakingQueue.findIndex(
-        (player) => player.username === username
-      );
-      const isInQueue = queueIndex !== -1;
-      const foundMatch = tryMatchPlayers() || {
-        matched: false,
-        gameId: null,
-        player1: null,
-        player2: null,
-      };
-
-      res.json({
-        success: true,
-        gameFound: foundMatch.matched,
-        gameId: foundMatch.gameId,
-        opponent: foundMatch.matched
-          ? foundMatch.player1 === username
-            ? foundMatch.player2
-            : foundMatch.player1
-          : null,
-        queuePosition: isInQueue ? queueIndex + 1 : 0,
-        playersInQueue: matchmakingQueue.length,
-      });
-    });
-  } else {
-    // No token, just report queue info without authentication
+  if (!token) {
     console.log("Queue status request from guest");
-
-    res.json({
+    return res.json({
       success: true,
       gameFound: false,
+      gameId: null,
+      opponent: null,
       queuePosition: 0,
       playersInQueue: matchmakingQueue.length,
     });
   }
+
+  authenticateToken(req, res, () => {
+    const username = req.user.username;
+    console.log(`Queue status request for user: ${username}`);
+
+    let gameFound = false,
+      gameId = null,
+      opponent = null,
+      queuePosition = 0;
+
+    if (pendingMatches.has(username)) {
+      
+      const match = pendingMatches.get(username);
+      const game = activeGames.get(match.gameId);
+
+      if (game) {
+        
+         opponent = game.players.find(
+          (p) => p.username !== username
+        )?.username;
+        
+        gameFound = true;
+        gameId = match.gameId;
+        match.notified = true;
+        
+        let oppNotified = pendingMatches.get(opponent).notified;
+        
+        // if both players have been notified, remove them from pending matches
+        if (oppNotified)
+        {
+          console.log(
+            `Both players notified for gameId: ${gameId} (${username} vs ${opponent})`
+          );
+          
+          pendingMatches.delete(username);
+          pendingMatches.delete(opponent);
+        }
+      }
+    } 
+    
+    res.json({
+      success: true,
+      playersInQueue: matchmakingQueue.length,
+      
+      gameFound,
+      gameId,
+      opponent,
+    });
+  });
 });
 
 // -------------------- Ping --------------------
@@ -243,34 +241,5 @@ router.get("/ping", (req, res) => {
     message: "Good Connection",
   });
 });
-
-// ✅ Match Players Function
-function tryMatchPlayers() {
-  if (matchmakingQueue.length >= 2) {
-    const p1 = matchmakingQueue.shift();
-    const p2 = matchmakingQueue.shift();
-
-    const player1 = new Player(1, p1.username);
-    const player2 = new Player(2, p2.username);
-
-    const gameManager = new GameManager(player1, player2);
-
-    activeGames.set(gameManager.gameId, gameManager);
-
-    // Use the gameManager's generated gameId
-    const gameId = gameManager.gameId;
-
-    console.log(`Game created: ${gameId} - ${p1.username} vs ${p2.username}`);
-
-    return {
-      matched: true,
-      gameId: gameId,
-      player1: player1.username,
-      player2: player2.username,
-    };
-  }
-
-  return null;
-}
 
 export { router as authRoutes };

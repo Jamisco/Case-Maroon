@@ -73,12 +73,12 @@ namespace CaseMaroon.Backend
         {
             stdoutFlushTimer = new Timer(flushInterval);
 
-            StartBackend();
+            //StartBackend();
         }
 
         void OnApplicationQuit()
         {
-            StopBackend();
+            //StopBackend();
         }
         private void StartBackend()
         {
@@ -212,7 +212,6 @@ namespace CaseMaroon.Backend
 
             StartCoroutine(UploadMapConfig_Post(worldMap));
         }
-
         public void GetGameState()
         {
             StartCoroutine(GetGameState_Get());
