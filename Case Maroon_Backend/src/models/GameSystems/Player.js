@@ -12,38 +12,12 @@ export class Player {
   constructor(pid, username) {
     this.id = pid;
     this.username = username;
+    
     this.reconPositions = []; // Array of ReconPosition
-    this.ownedPositions = []; // Array of Vector2Int
-    this.playerState = PlayerState.Loading; // PlayerState enum
+
     this.initState = true;
   }
 
-  capturePosition(gridPos) {
-    const exists = this.ownedPositions.some(
-      (pos) => pos.x === gridPos.x && pos.y === gridPos.y
-    );
-
-    if (!exists) {
-      this.ownedPositions.push(gridPos);
-      let rp = new ReconPosition(gridPos, Player.reconLevel, 0);
-
-      this.addReconPosition(rp);
-    }
-  }
-
-  capturePositions(gridPositions) {
-    for (const gridPos of gridPositions) {
-      const exists = this.ownedPositions.some(
-        (pos) => pos.x === gridPos.x && pos.y === gridPos.y
-      );
-
-      if (!exists) {
-        this.ownedPositions.push(gridPos);
-        let rp = new ReconPosition(gridPos, Player.reconLevel, 0);
-        this.addReconPosition(rp);
-      }
-    }
-  }
 
   // Helper to check if a position exists in an array
   _findReconIndex(gridPosition) {
@@ -56,12 +30,6 @@ export class Player {
 
   _findOwnedIndex(gridPosition) {
     return this.ownedPositions.findIndex(
-      (pos) => pos.x === gridPosition.x && pos.y === gridPosition.y
-    );
-  }
-
-  ownsHex(gridPosition) {
-    return this.ownedPositions.some(
       (pos) => pos.x === gridPosition.x && pos.y === gridPosition.y
     );
   }

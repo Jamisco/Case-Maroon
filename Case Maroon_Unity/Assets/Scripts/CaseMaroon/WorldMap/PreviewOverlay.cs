@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Units;
-using CaseMaroon.Backend;
+﻿using CaseMaroon.Backend;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMapUI;
 using UnityEngine;
@@ -112,10 +111,7 @@ namespace CaseMaroon.WorldMap
             }
             else if (cur.State == InputState.PlacingUnit)
             {
-                Sprite img = GameAssets.Instance.GetUnitImage   
-                    ((UnitType)cur.UnitType);
-
-                Unit ud = DefaultUnitData.CreateDefaultUnit((UnitType)cur.UnitType, img);
+                Unit ud = Unit.CreateUnit((UnitType)cur.UnitType);
 
                 ud.CreateUniqueId();
 

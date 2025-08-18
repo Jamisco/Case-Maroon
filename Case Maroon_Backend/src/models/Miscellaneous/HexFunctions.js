@@ -4,21 +4,21 @@
 // You can replace/add vector utility functions as needed.
 
 const EvenRowOffsets = [
-  { x: 0, y: 1 },    // 0
-  { x: 1, y: 0 },    // 1
-  { x: 0, y: -1 },   // 2
-  { x: -1, y: -1 },  // 3
-  { x: -1, y: 0 },   // 4
-  { x: -1, y: 1 },   // 5
+  { x: 0, y: 1 }, // 0
+  { x: 1, y: 0 }, // 1
+  { x: 0, y: -1 }, // 2
+  { x: -1, y: -1 }, // 3
+  { x: -1, y: 0 }, // 4
+  { x: -1, y: 1 }, // 5
 ];
 
 const OddRowOffsets = [
-  { x: 1, y: 1 },    // 0
-  { x: 1, y: 0 },    // 1
-  { x: 1, y: -1 },   // 2
-  { x: 0, y: -1 },   // 3
-  { x: -1, y: 0 },   // 4
-  { x: 0, y: 1 },    // 5
+  { x: 1, y: 1 }, // 0
+  { x: 1, y: 0 }, // 1
+  { x: 1, y: -1 }, // 2
+  { x: 0, y: -1 }, // 3
+  { x: -1, y: 0 }, // 4
+  { x: 0, y: 1 }, // 5
 ];
 
 // Helper to add two Vector2 objects
@@ -29,7 +29,7 @@ function addVec2(a, b) {
 export const HexFunctions = {
   getNeighbor(pos, side) {
     side = side % 6;
-    const offsets = (pos.y % 2 === 0) ? EvenRowOffsets : OddRowOffsets;
+    const offsets = pos.y % 2 === 0 ? EvenRowOffsets : OddRowOffsets;
     return addVec2(pos, offsets[side]);
   },
 
@@ -56,34 +56,38 @@ export const HexFunctions = {
   },
 
   getSurroundingTiles(initialPosition, distance = 1) {
-  const loopOrder = [1, 3, 4, 5, 6, 1, 2];
-  const surroundingTiles = [];
+    const loopOrder = [1, 3, 4, 5, 6, 1, 2];
+    const surroundingTiles = [];
 
-  if (distance < 1) {
-    distance = 1;
-  }
+    if (distance < 1) {
+      distance = 1;
+    }
 
-  let currentPos = { ...initialPosition };
-  let startPos = { ...initialPosition };
+    let currentPos = { ...initialPosition };
+    let startPos = { ...initialPosition };
 
-  let counter = 1;
+    let counter = 1;
 
-  while (counter <= distance) {
-    for (let s = 0; s < loopOrder.length; s++) {
-      for (let i = 1; i <= counter; i++) {
-        currentPos = HexFunctions.getNeighbor(currentPos, loopOrder[s]);
-        surroundingTiles.push({ ...currentPos });
+    while (counter <= distance) {
+      for (let s = 0; s < loopOrder.length; s++) {
+        for (let i = 1; i <= counter; i++) {
+          currentPos = HexFunctions.getNeighbor(currentPos, loopOrder[s]);
+          surroundingTiles.push({ ...currentPos });
 
-        if (s === 0) {
-          startPos = { ...currentPos };
-          break;
+          if (s === 0) {
+            startPos = { ...currentPos };
+            break;
+          }
         }
       }
+      currentPos = { ...startPos };
+      counter++;
     }
-    currentPos = { ...startPos };
-    counter++;
-  }
 
-  return surroundingTiles;
-}
+    return surroundingTiles;
+  },
+  
+  gridKey(gridPosition) {
+      return `${gridPosition.x},${gridPosition.y}`;
+  },
 };

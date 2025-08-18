@@ -210,5 +210,12 @@ namespace CaseMaroon.Miscellaneous
                 return gridPosition.GetHashCode_Unique();
             }
         }
+
+        [System.Serializable]
+        public struct OwnedPosition
+        {
+            public int playerId;
+            public Vector2Int gridPosition;
+        }
     }
 }

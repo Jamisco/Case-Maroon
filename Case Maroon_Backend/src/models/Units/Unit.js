@@ -7,6 +7,7 @@ export class Unit {
   
   constructor(id, type, position, mp) {
     this.unitId = id; // unique ID
+    this.playerId = null; // Player ID who owns this unit
     this.unitType = type; // e.g., "infantry", "tank"
     this.gridPosition = position; // Vector2Int object
     this.movePoints = mp; // movement points
@@ -16,12 +17,4 @@ export class Unit {
     this.gridPosition = pos;
   }
 
-  toJSON() {
-    return {
-      id: this.unitId,
-      type: this.unitType,
-      position: this.gridPosition,
-      mp: this.movePoints,
-    };
-  }
 }

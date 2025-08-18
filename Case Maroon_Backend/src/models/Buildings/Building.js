@@ -6,16 +6,16 @@ export class Building {
     static reconLevel = 5;
     
     constructor(buildingType, gridPosition) {
-        
+         
         this.buildingType = buildingType; // building type
+        this.playerId = null; // Player ID who owns this building
         this.gridPosition = gridPosition; // Vector2Int
     }
 
     toJSON() {
         return {
             id: this.id,
-            type: this.type,
-            position: this.position,
+            gridPost: this.position,
             ownerId: this.ownerId,
         };
     } 

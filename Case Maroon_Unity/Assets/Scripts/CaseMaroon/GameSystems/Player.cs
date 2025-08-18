@@ -5,6 +5,7 @@ using static CaseMaroon.Miscellaneous.GlobalData;
 using static CaseMaroon.Backend.BackendResponses;
 using System.Linq;
 using Unity.VisualScripting;
+using static CaseMaroon.Backend.BackendModels;
 
 namespace CaseMaroon.GameSystem
 {
@@ -16,7 +17,7 @@ namespace CaseMaroon.GameSystem
 
         public HashSet<Vector2Int> OwnedPositions { get; private set; }
 
-        public Player(PlayerResponse pr)
+        public Player(PlayerModel pr)
         {
             Id = pr.id;
 
@@ -27,12 +28,6 @@ namespace CaseMaroon.GameSystem
             {
                 ReconPositions.AddRange(pr.reconPositions);
             }
-
-            if (pr.ownedPositions.Count > 0)
-            {
-                OwnedPositions.AddRange(pr.ownedPositions);
-            }
-
         }
 
         public void UpdateReconPosition(List<ReconPosition> add, List<ReconPosition> remove)
@@ -87,18 +82,28 @@ namespace CaseMaroon.GameSystem
             // to be implemented
         }
 
-        public void Update(PlayerResponse pr)
+        public void Update(PlayerModel pr)
         {
             // Update the player's data with the server data
             Id = pr.id;
             // Update recon positions
             ReconPositions.Clear();
             ReconPositions.UnionWith(pr.reconPositions);
-            // Update owned positions
-            OwnedPositions.Clear();
-            OwnedPositions.UnionWith(pr.ownedPositions);
         }
 
+        public void SetOwnedPositions(List<OwnedPosition> positions)
+        {
+            List<Vector2Int> pos = positions.Where(pos => pos.playerId == Id).Select(pos => pos.gridPosition).ToList();
+
+            OwnedPositions.Clear();
+            OwnedPositions.UnionWith(pos);
+        }
+
+        public bool CanSeeUnit(Vector2Int gridPos)
+        {
+            // Check if the player can see a unit at the given grid position
+            return ReconPositions.Any(rp => rp.gridPosition == gridPos && rp.ReconLevel > 2);
+        }
 
     }
 }

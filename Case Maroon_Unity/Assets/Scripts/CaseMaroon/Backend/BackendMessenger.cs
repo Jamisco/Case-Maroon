@@ -13,6 +13,7 @@ using System.Text;
 using System.Timers;
 using UnityEngine;
 using UnityEngine.Networking;
+using static CaseMaroon.Backend.BackendModels;
 using static CaseMaroon.Backend.BackendPayloads;
 using static CaseMaroon.Backend.BackendRequests;
 using static CaseMaroon.Backend.BackendResponses;
@@ -20,7 +21,7 @@ using Debug = UnityEngine.Debug;
 
 namespace CaseMaroon.Backend
 {
-    public delegate void GameStateSyncedHandler(GameStateResponse gsr);
+    public delegate void GameManagerSyncedHandler(GameManagerModel gsr);
 
     public delegate void PingResponseHandler(bool status);
 
@@ -33,7 +34,7 @@ namespace CaseMaroon.Backend
         public string BASE_URL = "http://localhost:3001/api";
         public bool USELOCALBACKEND = false;
 
-        public event GameStateSyncedHandler GameStateSynced;
+        public event GameManagerSyncedHandler GameStateSynced;
         public event PingResponseHandler OnPingResponse;
         public event LoginResponseHandler OnLoginResponse;
 
@@ -458,7 +459,7 @@ namespace CaseMaroon.Backend
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     string json = request.downloadHandler.text;
-                    GameStateResponse gameState = GameStateResponse.FromJson(json);
+                    GameManagerModel gameState = GameManagerModel.FromJson(json);
                     GameStateSynced?.Invoke(gameState);
                 }
                 else

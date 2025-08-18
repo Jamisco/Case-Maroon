@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Units;
-using CaseMaroon.Units;
+﻿using CaseMaroon.Units;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -36,48 +35,6 @@ namespace CaseMaroon.WorldMap
         {
             public BuildingType buildType;
             public Sprite[] Images;
-        }
-
-
-        public Unit CreateUnit(UnitType ut)
-        {
-            Unit unitData = null;
-            Sprite sprite;
-
-            switch (ut)
-            {
-                case UnitType.Infantry:
-                    sprite = unitSettings.Where(x => x.unitType == UnitType.Infantry).FirstOrDefault().Images[0];
-
-                    unitData = DefaultUnitData.CreateDefaultUnit<Infantry>(sprite);
-
-                    int ran2DNumber = UnityEngine.Random.Range(10, 99);
-
-                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
-                    unitData.UnitName = ran2DNumber.ToString() + " Infantry Division";
-
-                    break;
-                case UnitType.Armored:
-
-                    sprite = unitSettings.Where(x => x.unitType == UnitType.Armored).FirstOrDefault().Images[0];
-
-                    unitData = DefaultUnitData.CreateDefaultUnit<Tank>(sprite);
-
-                    unitData.UnitId = UnityEngine.Random.Range(10000, 99999); // Random ID for the unit
-                    ran2DNumber = UnityEngine.Random.Range(10, 99);
-                    unitData.UnitName = ran2DNumber.ToString() + " Armored Division";
-
-                    break;
-                case UnitType.Artillery:
-
-
-                    sprite = unitSettings.Where(x => x.unitType == UnitType.Artillery).FirstOrDefault().Images[0];
-
-                    break;
-            }
-
-            return unitData;
-
         }
 
         public Sprite GetUnitImage(UnitType ut)

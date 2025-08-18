@@ -5,8 +5,10 @@ using CaseMaroon.WorldMap;
 using CaseMaroon.WorldMapUI;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static CaseMaroon.Backend.BackendModels;
 using static CaseMaroon.Backend.BackendResponses;
 using static CaseMaroon.Miscellaneous.GlobalData;
 
@@ -27,7 +29,9 @@ namespace CaseMaroon.GameSystem
         public MessageManager messageManager;
 
         public Player GamePlayer;
-
+        public int PlayerId => GamePlayer?.Id ?? -1;
+        public List<OwnedPosition> OwnedPositions = new List<OwnedPosition>();
+        
         public float messageDelay = .5f;
         public bool StartSequence = false;
         public enum InitMessage { Welcome, SpawnHQ, PlaceUnits}
@@ -60,9 +64,9 @@ namespace CaseMaroon.GameSystem
             BackendMessenger.Instance.GameStateSynced += GameStateSynced;
         }
 
-        private void GameStateSynced(BackendResponses.GameStateResponse gsr)
+        private void GameStateSynced(GameManagerModel gmm)
         {
-            PlayerResponse choosen = gsr.players.Find(p => p.username == AuthManager.Username);
+            PlayerModel choosen = gmm.players.Find(p => p.username == AuthManager.Username);
 
             if (GamePlayer == null)
             {
@@ -71,10 +75,10 @@ namespace CaseMaroon.GameSystem
             else
             {
                 GamePlayer.Update(choosen);
+                GamePlayer.SetOwnedPositions(gmm.ownedPositions);
             }
 
             WorldmapOverlay.Instance.UpdateReconOverlay();
-
         }
 
         public void RestartGame()

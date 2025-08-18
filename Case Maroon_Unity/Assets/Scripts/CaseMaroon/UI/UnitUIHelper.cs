@@ -11,6 +11,8 @@ namespace CaseMaroon.WorldMapUI
     {
         public Dictionary<Vector2Int, List<UnitInfoUI_1>> battleUnits = new();
 
+        public Dictionary<int, Unit> allUnits = new();
+
         GameObject unitParent;
 
         WorldUI wu;
@@ -55,6 +57,7 @@ namespace CaseMaroon.WorldMapUI
             StackUnits(gridPos);
         }
 
+        // will remove the top most unit
         public void RemoveUnit(Vector2Int gridPos)
         {
             GetUnitInfos(gridPos, out List<UnitInfoUI_1> units);
@@ -71,6 +74,23 @@ namespace CaseMaroon.WorldMapUI
             StackUnits(gridPos);
         }
 
+        public void RemoveUnitById(Unit unit)
+        {
+            UnitInfoUI_1 unitInfo;
+
+            Unit prev = null;
+            allUnits.TryGetValue(unit.UnitId, out prev);
+
+            if (prev != null)
+            {
+                GetUnitInfo(prev, out unitInfo);
+                RemoveUnit(unitInfo);
+            }
+            else
+            {
+                Debug.LogWarning($"Unit with ID {unit.UnitId} not found in allUnits dictionary.");
+            }
+        }
 
         public void MoveToPosition_Instant(UnitInfoUI_1 unitInfo, Vector2Int newPos)
         {
@@ -126,6 +146,7 @@ namespace CaseMaroon.WorldMapUI
             else
             {
                 battleUnits.Add(gridPos, new());
+                allUnits.Add(unit.unit.UnitId, unit.unit);
                 battleUnits[gridPos].Add(unit);
             }
         }
@@ -135,6 +156,7 @@ namespace CaseMaroon.WorldMapUI
             if (battleUnits.ContainsKey(gridPos))
             {
                 battleUnits[gridPos].Remove(unit);
+                allUnits.Remove(unit.unit.UnitId);
             }
         }
         public bool GetUnitInfos(Vector2Int gridPos, out List<UnitInfoUI_1> units)

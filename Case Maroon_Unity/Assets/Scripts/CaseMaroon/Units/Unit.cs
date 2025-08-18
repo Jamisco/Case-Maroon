@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using CaseMaroon.GameSystem;
+using System;
+using UnityEngine;
 
 namespace CaseMaroon.Units
 {
@@ -28,9 +30,10 @@ namespace CaseMaroon.Units
         public int AgainstStructure;
     }
 
-    public abstract class Unit
+    public abstract class Unit : IEquatable<Unit>
     {
         public virtual int UnitId { get; set; }
+        public virtual int PlayerId { get; set; } = (GameManager.Instance.PlayerId);
         public virtual string UnitName { get; set; }
         public abstract UnitType UnitType { get; }
         public virtual int HealthPoints { get; set; }
@@ -65,6 +68,51 @@ namespace CaseMaroon.Units
         {
             UnitId = idLink;
             idLink += 111;
+        }
+        public static T CreateUnit<T>() where T : Unit
+        {
+            switch (Type.GetTypeCode(typeof(T)))
+            {
+                case TypeCode.Object:
+                    if (typeof(T) == typeof(Infantry))
+                    {
+                        Infantry inf = new Infantry();
+                        return (T)(object)inf;
+                    }
+                    else if (typeof(T) == typeof(Tank))
+                    {
+                        Tank tank = new Tank();
+                        return (T)(object)tank;
+                    }
+                    else if (typeof(T) == typeof(Artillery))
+                    {
+                        Artillery art = new Artillery();
+                        return (T)(object)art;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        public static Unit CreateUnit(UnitType unitType)
+        {
+            switch (unitType)
+            {
+                case UnitType.Infantry:
+                    return new Infantry();
+                case UnitType.Armored:
+                    return new Tank();
+                case UnitType.Artillery:
+                    return new Artillery();
+                default:
+                    throw new ArgumentException($"Unsupported unit type: {unitType}");
+            }
+        }
+
+        public bool Equals(Unit other)
+        {
+            return UnitId == other.UnitId;
         }
     }
 

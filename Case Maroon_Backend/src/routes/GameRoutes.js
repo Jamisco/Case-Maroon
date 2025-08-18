@@ -207,11 +207,13 @@ export function gameRoutes(activeGames) {
     if (!gameManager) return;
 
     try {
-      res.json(gameManager.toJSON());
+      res.status(200).json(
+        gameManager.toJson(),
+      );
     } catch (error) {
       res.status(500).json({
         success: false,
-        GameStateResponse: gameManager,
+        message: error.message || "Internal server error",
       });
     }
   });

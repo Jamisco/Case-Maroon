@@ -1,7 +1,7 @@
 ﻿using CaseMaroon.Units;
 using System;
 using UnityEngine;
-using static CaseMaroon.Backend.GlobalModel;
+using static CaseMaroon.Backend.BackendModels;
 
 namespace CaseMaroon.Backend
 {
@@ -36,7 +36,7 @@ namespace CaseMaroon.Backend
 
         public static string ToJson(this Unit unit)
         {
-            return JsonUtility.ToJson(new UnitDataWrap(unit));
+            return JsonUtility.ToJson(new UnitModel(unit));
         }
     }
 }

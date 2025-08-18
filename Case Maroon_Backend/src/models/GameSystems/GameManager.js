@@ -12,26 +12,57 @@ import mapSettings from "../WorldMap/MapSettings.json" with { type: "json" };
 
 export class GameManager {
   constructor(player1, player2) {
+        
     this.gameId = Math.floor(10000 + Math.random() * 90000);
     this.players = [player1, player2]; // of class Player
-    this.buildings = [];
-    this.units = [];
-
+    
+    // Map of gridPosition to Building
+    this.buildings = new Map();
+    
+    // Map of gridPosition to Unit
+    this.units = new Map();
+    
+    // Map of Grid Position to PlayerId
+    this.ownedPositions = new Map(); 
+    
     let seed = Math.floor(Math.random() * 1001);
-
+    
     console.log("Choosing seed for world map: " + seed);
 
     mapSettings.noiseConfig.landNoiseSettings.seed = seed;
-
+    
     this.worldMap = new Worldmap(mapSettings);
     this.worldMap.ComputeNoise();
-
     this.noiseHash = this.worldMap.noiseGenerator.getNoiseHash();
-
     this.gridGenerated = false;
+    
+    this.setPlayerPositions();
+    
+  }
+
+
+
+  setWorldMap(worldMap) {
+    
+    this.worldMap = worldMap;
     this.setPlayerPositions();
   }
 
+  validateNoiseHash(clientHash) {
+    const tolerancePercent = 0.1;
+    const difference = Math.abs(clientHash - this.noiseHash);
+
+    const percentDifference = (difference / Math.abs(this.noiseHash)) * 100;
+
+    let goodMap = percentDifference <= tolerancePercent;
+    
+    if (goodMap) {
+      this.gridGenerated = true;
+    }
+     
+    return goodMap;
+  }
+  
   setPlayerPositions() {
     const position1 = [];
     const position2 = [];
@@ -61,25 +92,6 @@ export class GameManager {
 
     this.players[0].reconPositions = position1;
     this.players[1].reconPositions = position2;
-  }
-
-  setWorldMap(worldMap) {
-    this.worldMap = worldMap;
-
-    this.setPlayerPositions();
-  }
-
-  setGridGenerated(value) {
-    this.gridGenerated = value;
-  }
-
-  validateNoiseHash(clientHash) {
-    const tolerancePercent = 0.1;
-    const difference = Math.abs(clientHash - this.noiseHash);
-
-    const percentDifference = (difference / Math.abs(this.noiseHash)) * 100;
-
-    return percentDifference <= tolerancePercent;
   }
 
   updatePlayerState(playerId, newState) {
@@ -125,33 +137,61 @@ export class GameManager {
     if (!player) return;
 
     player.addReconPositions(reconPos);
-    player.capturePosition(gridPos);
+    this.capturePosition(playerId, gridPos);
   }
 
-  addBuilding(playerId, building) {
-    const exists = this.buildings.some(
-      (b) =>
-        b.gridPosition.x === building.gridPosition.x &&
-        b.gridPosition.y === building.gridPosition.y
-    );
-    if (exists) return false;
+  capturePosition(playerId, gridPos) {
+    
+    const player = this.getPlayerById(playerId);
+    if (!player) return false;
 
-    let curPlayer = this.getPlayerById(playerId);
-    if (!curPlayer) return false;
-
-    // If this is the first building for the player, capture the position
-    // to ensure they own the hex
-    if (curPlayer.initState) {
-      curPlayer.initState = false;
-      curPlayer.capturePosition(building.gridPosition);
+    // Check if the position is already owned by the player
+    const owned = this.ownedPositions.get(this.pk(gridPos)) || false;
+    
+    if( owned && owned === playerId) {
+      return true; // Position already owned by this player
     }
     
-    if (!curPlayer.ownsHex(building.gridPosition)) {
-      console.error("Player does not own the hex for this building.");
-      return false;
-    } 
+    // If not owned, capture the position
+    this.ownedPositions.set(this.pk(gridPos), playerId);
+    
+    let rp = new ReconPosition(gridPos, Player.reconLevel, 0);  
+    player.addReconPosition(rp);
+    
+  }
+  
+  capturePositions(playerId, gridPositions) {
+    
+    for (const gridPos of gridPositions) {      
+      this.capturePosition(playerId, gridPos);
+    }
+    
+  }
+  
+  addBuilding(playerId, building) {
+    const exists = this.buildings[building.gridPosition];
+       
+    if (exists) return false;
 
-    this.buildings.push(building);
+    if (!playerId) return false;
+
+    let player = this.getPlayerById(playerId);
+    
+    // If this is the first building for the player, capture the position
+    // to ensure they own the hex
+    if (player.initState) {
+      player.initState = false;
+      this.capturePosition(playerId, building.gridPosition);
+    }
+    
+    if (!this.ownsHex(playerId, building.gridPosition)) {
+      this.capturePosition(playerId, building.gridPosition);
+      
+      // console.error("Player does not own the hex for this building.");
+      // return false;
+    }
+
+    this.buildings.set(this.pk(building.gridPosition), building);
 
     const gp = building.gridPosition;
     const distance = Building.reconScope;
@@ -161,8 +201,9 @@ export class GameManager {
     this.updateVisionAround(playerId, gp, distance, ur, br);
 
     if (this.gridGenerated) {
+      
       let positions = HexFunctions.getSurroundingTiles(gp, distance);
-      curPlayer.capturePositions(positions);
+      this.capturePositions(playerId, positions);
       this.gridGenerated = false;
     }
 
@@ -170,18 +211,16 @@ export class GameManager {
   }
 
   spawnUnit(playerId, gridPos, unit) {
-    const exists = this.units.some(
-      (u) => u.gridPosition.x === gridPos.x && u.gridPosition.y === gridPos.y
-    );
+    
+    const exists = this.units.get(this.pk(gridPos)) || false;
     if (exists) return false;
 
-    let curPlayer = this.getPlayerById(playerId);
-    if (!curPlayer || !curPlayer.ownsHex(gridPos)) {
+    if (!playerId || !this.ownsHex(playerId, gridPos)) {
       return false;
     }
 
-    this.units.push(unit);
     unit.gridPosition = gridPos;
+    this.units.set(this.pk(gridPos), unit);
 
     const gp = unit.gridPosition;
     const distance = Unit.reconScope;
@@ -193,13 +232,26 @@ export class GameManager {
     return true;
   }
 
+  ownsHex(playerId, gridPosition) {
+    const player = this.getPlayerById(playerId);
+    if (!player) return false;
+    let id = this.ownedPositions.get(this.pk(gridPosition)) || -1;
+    
+    return id === playerId;
+  }
+  
+  pk(gridPosition) {
+    return HexFunctions.gridKey(gridPosition);
+  }
+  
   moveUnit(playerId, unit, path) {
-    if (!Array.isArray(path) || path.length === 0) {
+    
+    if (!Array.isArray(path) || path.length == 0) {
       console.error("Path is invalid or empty.");
       return false;
     }
 
-    const existingUnit = this.units.find((u) => u.id === unit.id);
+    const existingUnit = this.units.get(this.pk(unit.gridPosition));
 
     if (!existingUnit) {
       console.error("No matching unit found on server.");
@@ -220,20 +272,44 @@ export class GameManager {
         0
       );
       for (const reconPos of recon) {
-        player.capturePosition(reconPos.gridPosition);
+        this.capturePosition(playerId, reconPos.gridPosition);
       }
     }
 
-    existingUnit.gridPosition = toPos;
+    this.units.delete(this.pk(unit.gridPosition));
+    this.units.set(this.pk(toPos), unit);
+    unit.gridPosition = toPos;
+    
     return true;
   }
 
-  toJSON() {
-    return {
-      players: this.players.map((p) => (p.toJSON ? p.toJSON() : p)),
-      gridSize: this.worldMap.gridSize,
-      buildings: this.buildings,
-      units: this.units,
-    };
+  getUnits() {
+    
+    return Array.from(this.units.values()).map((unit) => unit);
   }
+  
+toJson() {
+  return {
+    gameId: this.gameId,
+    players: this.players.map((p) => ({
+      id: p.id,
+      username: p.username,
+      reconPositions: p.reconPositions,
+    })),
+    buildings: Array.from(this.buildings.values()),
+    units: Array.from(this.units.values()),
+
+    ownedPositions: Array.from(this.ownedPositions.entries()).map(([key, playerId]) => {
+      const [x, y] = key.split(",").map(Number);
+      return {
+        gridPosition: { x, y },
+        playerId
+      };
+    }),
+
+    noiseHash: this.noiseHash,
+    gridGenerated: this.gridGenerated,
+  };
+}
+
 }

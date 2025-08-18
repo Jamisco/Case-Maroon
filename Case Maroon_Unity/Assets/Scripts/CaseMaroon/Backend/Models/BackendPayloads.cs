@@ -3,7 +3,7 @@ using CaseMaroon.WorldMap;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static CaseMaroon.Backend.GlobalModel;
+using static CaseMaroon.Backend.BackendModels;
 using static CaseMaroon.WorldMap.BiomeGenerator;
 using static CaseMaroon.WorldMap.NoiseGenerator;
 
@@ -15,23 +15,23 @@ namespace CaseMaroon.Backend
         public struct SpawnUnitPayload
         {
             public Vector2Int gridPosition;
-            public UnitDataWrap unit;
+            public UnitModel unit;
 
             public SpawnUnitPayload(Vector2Int pos, Unit data)
             {
                 gridPosition = pos;
-                unit = new UnitDataWrap(data);
+                unit = new UnitModel(data);
             }
         }
 
         public struct MoveUnitPayload
         {
-            public UnitDataWrap unit;
+            public UnitModel unit;
             public List<Vector2Int> path;
 
             public MoveUnitPayload(Unit data, List<Vector2Int> path)
             {
-                unit = new UnitDataWrap(data);
+                unit = new UnitModel(data);
                 this.path = path;
             }
         }

@@ -150,7 +150,7 @@ namespace CaseMaroon.WorldMapUI
             StatItemCard owned = Object.Instantiate(startCardPrefab);
 
             owned.Label = "Hex Owned: ";
-            owned.Value = GameManager.Instance.GamePlayer.OwnedPositions.Contains(recent).ToString();
+            owned.Value = "NA";
 
             StatItemCard recon = Object.Instantiate(startCardPrefab);
 

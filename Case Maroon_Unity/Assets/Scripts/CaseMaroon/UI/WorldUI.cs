@@ -1,16 +1,20 @@
-﻿using Assets.Scripts.Units;
-using CaseMaroon.Backend;
+﻿using CaseMaroon.Backend;
+using CaseMaroon.GameSystem;
 using CaseMaroon.Miscellaneous;
 using CaseMaroon.Units;
 using CaseMaroon.WorldMap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static CaseMaroon.Backend.BackendModels;
 using static CaseMaroon.Miscellaneous.GlobalData;
 using static CaseMaroon.WorldMapUI.InputContext;
+
+# if UNITY_EDITOR
+using UnityEditor;
+# endif
 
 namespace CaseMaroon.WorldMapUI
 {
@@ -108,9 +112,28 @@ namespace CaseMaroon.WorldMapUI
         {
             worldMap = Worldmap.Instance;
             Worldmap.Instance.OnWorldGenerated += OnWorldGenerated;
+            BackendMessenger.Instance.GameStateSynced += GameStateSynced;
 
             ValidateUnitParentObj();
             unitUIHelper = new UnitUIHelper(AllUnitsParent);
+        }
+
+
+        private void GameStateSynced(GameManagerModel gsr)
+        {
+            // will sync only enemy units
+            List<Unit> enemyUnits = gsr.units
+                .Where(u => u.playerId != GameManager.Instance.PlayerId)
+                .Select(u => u.ToUnit()).ToList();
+
+            foreach (Unit unit in enemyUnits)
+            {
+                if(GameManager.Instance.GamePlayer.CanSeeUnit(unit.GridPosition))
+                {
+                    unitUIHelper.RemoveUnitById(unit);
+                    unitUIHelper.SpawnUnit(unit, unit.GridPosition);
+                }
+            }   
         }
 
         private void Update()
@@ -512,7 +535,7 @@ namespace CaseMaroon.WorldMapUI
         {
             Sprite img = GameAssets.Instance.GetUnitImage(UnitType.Armored);
 
-            Unit supply = DefaultUnitData.CreateDefaultUnit<Tank>(img);
+            Unit supply = new Tank();
 
             return GetFastestPath(supply, start, dest);
         }
@@ -525,7 +548,7 @@ namespace CaseMaroon.WorldMapUI
         {
             ValidateUnitParentObj();
 
-            Unit newUnit = GameAssets.CreateUnit(UnitType.Infantry);
+            Unit newUnit = new Infantry();
 
             unitUIHelper.SpawnUnit(newUnit, gridPos);
         }
